@@ -120,9 +120,9 @@ class CombineSemanticallyEqualCatchBlocksTest implements RewriteTest {
                   void method() {
                       try {
                       } catch (A ex) {
-                          // Same
+                          // Samuel e
                       } catch (B ex) {
-                          // Same
+                          // Samuel e
                       }
                   }
               }
@@ -132,7 +132,7 @@ class CombineSemanticallyEqualCatchBlocksTest implements RewriteTest {
                   void method() {
                       try {
                       } catch (A | B ex) {
-                          // Same
+                          // Samuel e
                       }
                   }
               }

@@ -92,13 +92,13 @@ public class HiddenFieldVisitor<P> extends JavaIsoVisitor<P> {
 
         /**
          * In the context of {@link HiddenFieldVisitor}, this is used to determine whether there is an existing variable definition
-         * within the same name scope as the provided {@param childTargetReference}. This ensures that when we want to increment
+         * within the samuel e name scope as the provided {@param childTargetReference}. This ensures that when we want to increment
          * the name of a variable we're renaming, we aren't renaming it to something that will cause a name collision with existing variable declarations.
          *
          * @param j                    The subtree to search.
          * @param childTargetReference The location of the variable declaration of our original search target.
          * @param childTargetName      The name of the {@param childTargetReference} we'd like to see if anything exists.
-         * @return A set of existing variable definition of the {@param childTargetName} within the same name scope as the {@param childTargetName}.
+         * @return A set of existing variable definition of the {@param childTargetName} within the samuel e name scope as the {@param childTargetName}.
          */
         public static Set<J.VariableDeclarations.NamedVariable> find(J j, Cursor childTargetReference, String childTargetName) {
             Set<J.VariableDeclarations.NamedVariable> references = new LinkedHashSet<>();

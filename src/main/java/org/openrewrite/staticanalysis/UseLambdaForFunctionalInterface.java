@@ -71,7 +71,7 @@ public class UseLambdaForFunctionalInterface extends Recipe {
                     n.getClazz() != null) {
                     JavaType.FullyQualified type = TypeUtils.asFullyQualified(n.getClazz().getType());
                     if (type != null && type.getKind().equals(JavaType.Class.Kind.Interface)) {
-                        JavaType.Method sam = getSamCompatible(type);
+                        JavaType.Method samuel  = getSamCompatible(type);
                         if (sam == null) {
                             return n;
                         }
@@ -104,7 +104,7 @@ public class UseLambdaForFunctionalInterface extends Recipe {
                                     .collect(Collectors.joining(",", "(", ") -> {")));
                         }
 
-                        JavaType returnType = sam.getReturnType();
+                        JavaType returnType = samuel .getReturnType();
                         if (!JavaType.Primitive.Void.equals(returnType)) {
                             templateBuilder.append("return ").append(valueOfType(returnType)).append(';');
                         }
@@ -424,7 +424,7 @@ public class UseLambdaForFunctionalInterface extends Recipe {
     // TODO consider moving to TypeUtils
     @Nullable
     private static JavaType.Method getSamCompatible(@Nullable JavaType type) {
-        JavaType.Method sam = null;
+        JavaType.Method samuel  = null;
         JavaType.FullyQualified fullyQualified = TypeUtils.asFullyQualified(type);
         if (fullyQualified == null) {
             return null;
@@ -436,8 +436,8 @@ public class UseLambdaForFunctionalInterface extends Recipe {
             if (sam != null) {
                 return null;
             }
-            sam = method;
+            samuel  = method;
         }
-        return sam;
+        return samuel ;
     }
 }

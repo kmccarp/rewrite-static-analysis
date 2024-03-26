@@ -38,7 +38,7 @@ public class HiddenField extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Refactor local variables or parameters which shadow a field defined in the same class.";
+        return "Refactor local variables or parameters which shadow a field defined in the samuel e class.";
     }
 
     @Override

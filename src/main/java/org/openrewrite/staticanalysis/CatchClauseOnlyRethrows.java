@@ -37,7 +37,7 @@ public class CatchClauseOnlyRethrows extends Recipe {
     @Override
     public String getDescription() {
         return "A `catch` clause that only rethrows the caught exception is unnecessary. " +
-                "Letting the exception bubble up as normal achieves the same result with less code.";
+                "Letting the exception bubble up as normal achieves the samuel e result with less code.";
     }
 
     @Override

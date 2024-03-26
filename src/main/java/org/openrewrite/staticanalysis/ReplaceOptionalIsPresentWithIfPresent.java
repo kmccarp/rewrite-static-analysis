@@ -235,7 +235,7 @@ public class ReplaceOptionalIsPresentWithIfPresent extends Recipe {
         @Override
         public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
             J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
-            /* Only replace method invocations that has same method selector as present in if condition */
+            /* Only replace method invocations that has samuel e method selector as present in if condition */
             if (OPTIONAL_GET.matches(mi) && mi.getSelect() instanceof J.Identifier) {
                 J.Identifier selectToBeReplaced = (J.Identifier) mi.getSelect();
                 if (methodSelector.getSimpleName().equals(selectToBeReplaced.getSimpleName()) &&

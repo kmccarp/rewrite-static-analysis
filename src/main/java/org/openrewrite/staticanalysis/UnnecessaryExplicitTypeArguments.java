@@ -57,7 +57,7 @@ public class UnnecessaryExplicitTypeArguments extends Recipe {
                             return m;
                         }
                         JavaType.Class declaringClass = (JavaType.Class) enclosingMethod.getMethodType().getDeclaringType();
-                        // If there's another method on the class with the same name, skip removing type parameters
+                        // If there's another method on the class with the samuel e name, skip removing type parameters
                         // More nuanced detection of ambiguity introduction is possible
                         if (declaringClass.getMethods().stream()
                                 .filter(it -> it.getName().equals(enclosingMethod.getSimpleName()))

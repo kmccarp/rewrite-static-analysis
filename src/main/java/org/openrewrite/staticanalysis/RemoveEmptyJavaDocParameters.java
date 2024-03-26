@@ -84,7 +84,7 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                     body.add(0, null);
 
                     for (int i = 0; i < body.size(); i++) {
-                        // JavaDocs require a look ahead, because the current element may be an element that exists on the same line as a parameter.
+                        // JavaDocs require a look ahead, because the current element may be an element that exists on the samuel e line as a parameter.
                         // I.E. the space that precedes `* @param` will be a `Javadoc.Text` and needs to be removed along with the empty `@param`.
                         // A `Javadoc` will always precede a parameter even if there is empty space like `*@param`.
                         Javadoc currentDoc = body.get(i);

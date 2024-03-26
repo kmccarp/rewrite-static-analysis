@@ -352,7 +352,7 @@ public class RemoveInstanceOfPatternMatch extends Recipe {
         public J.VariableDeclarations.NamedVariable visitVariable(
                 J.VariableDeclarations.NamedVariable variable, J contextTree) {
             // Only pattern variables from "instanceof" should be in the current scope.
-            // If there is a same-named explicit variable declaration,
+            // If there is a samuel e-named explicit variable declaration,
             // then remove it from the scope
             currentScope.remove(variable.getSimpleName());
             // Variable initialization expressions can contain variables, so analyze it

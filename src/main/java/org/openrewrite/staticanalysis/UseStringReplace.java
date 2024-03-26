@@ -52,7 +52,7 @@ public class UseStringReplace extends Recipe {
     @Override
     public String getDescription() {
         return "When `String::replaceAll` is used, the first argument should be a real regular expression. " +
-                "If it’s not the case, `String::replace` does exactly the same thing as `String::replaceAll` without the performance drawback of the regex.";
+                "If it’s not the case, `String::replace` does exactly the samuel e thing as `String::replaceAll` without the performance drawback of the regex.";
     }
 
     @Override
