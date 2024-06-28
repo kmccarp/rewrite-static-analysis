@@ -45,8 +45,7 @@ public abstract class RenameToCamelCase extends JavaIsoVisitor<ExecutionContext>
 
     @Override
     public @Nullable J postVisit(J tree, ExecutionContext ctx) {
-        if (tree instanceof JavaSourceFile) {
-            JavaSourceFile cu = (JavaSourceFile) tree;
+        if (tree instanceof JavaSourceFile cu) {
             Map<J.VariableDeclarations.NamedVariable, String> renameVariablesMap = getCursor().getMessage("RENAME_VARIABLES_KEY", emptyMap());
             Set<String> hasNameSet = getCursor().computeMessageIfAbsent("HAS_NAME_KEY", k -> new HashSet<>());
             for (Map.Entry<J.VariableDeclarations.NamedVariable, String> entry : renameVariablesMap.entrySet()) {
@@ -87,11 +86,11 @@ public abstract class RenameToCamelCase extends JavaIsoVisitor<ExecutionContext>
 
     @Nullable
     protected JavaType.Variable getFieldType(J tree) {
-        if (tree instanceof J.Identifier) {
-            return ((J.Identifier) tree).getFieldType();
+        if (tree instanceof J.Identifier identifier) {
+            return identifier.getFieldType();
         }
-        if (tree instanceof J.VariableDeclarations.NamedVariable) {
-            return ((J.VariableDeclarations.NamedVariable) tree).getVariableType();
+        if (tree instanceof J.VariableDeclarations.NamedVariable variable) {
+            return variable.getVariableType();
         }
         return null;
     }

@@ -42,9 +42,11 @@ public class ReplaceStringBuilderWithString extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replace `StringBuilder.append()` with String if you are only concatenating a small number of strings " +
-               "and the code is simple and easy to read, as the compiler can optimize simple string concatenation " +
-               "expressions into a single String object, which can be more efficient than using StringBuilder.";
+        return """
+               Replace `StringBuilder.append()` with String if you are only concatenating a small number of strings \
+               and the code is simple and easy to read, as the compiler can optimize simple string concatenation \
+               expressions into a single String object, which can be more efficient than using StringBuilder.\
+               """;
     }
 
     @Override
@@ -111,8 +113,8 @@ public class ReplaceStringBuilderWithString extends Recipe {
             return ListUtils.map(arguments, (i, arg) -> {
                 if (i == 0) {
                     if (!TypeUtils.isString(arg.getType())) {
-                        if (arg instanceof J.Literal) {
-                            return toStringLiteral((J.Literal) arg);
+                        if (arg instanceof J.Literal literal) {
+                            return toStringLiteral(literal);
                         } else {
                             return JavaTemplate.builder("String.valueOf(#{any()})").build()
                                     .apply(getCursor(), method.getCoordinates().replace(), arg)
@@ -152,16 +154,15 @@ public class ReplaceStringBuilderWithString extends Recipe {
                 if (args.size() != 1) {
                     return false;
                 } else {
-                    arguments.add(args.get(0));
+                    arguments.add(args.getFirst());
                 }
             }
 
-            if (select instanceof J.NewClass &&
-                ((J.NewClass) select).getClazz() != null &&
-                TypeUtils.isOfClassType(((J.NewClass) select).getClazz().getType(), "java.lang.StringBuilder")) {
-                J.NewClass nc = (J.NewClass) select;
-                if (nc.getArguments().size() == 1 && TypeUtils.isString(nc.getArguments().get(0).getType())) {
-                    arguments.add(nc.getArguments().get(0));
+            if (select instanceof J.NewClass nc &&
+                nc.getClazz() != null &&
+                TypeUtils.isOfClassType(nc.getClazz().getType(), "java.lang.StringBuilder")) {
+                if (nc.getArguments().size() == 1 && TypeUtils.isString(nc.getArguments().getFirst().getType())) {
+                    arguments.add(nc.getArguments().getFirst());
                 }
                 return true;
             }

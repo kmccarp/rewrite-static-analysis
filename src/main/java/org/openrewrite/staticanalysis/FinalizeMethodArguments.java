@@ -66,8 +66,7 @@ public class FinalizeMethodArguments extends Recipe {
             }
 
             private void checkIfAssigned(final AtomicBoolean assigned, final Statement p) {
-                if (p instanceof J.VariableDeclarations) {
-                    J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) p;
+                if (p instanceof J.VariableDeclarations variableDeclarations) {
                     if (variableDeclarations.getVariables().stream()
                             .anyMatch(namedVariable ->
                                     FindAssignmentReferencesToVariable.find(getCursor()
@@ -164,10 +163,9 @@ public class FinalizeMethodArguments extends Recipe {
     }
 
     private static Statement updateParam(final Statement p) {
-        if (p instanceof J.VariableDeclarations) {
-            J.VariableDeclarations variableDeclarations = (J.VariableDeclarations) p;
+        if (p instanceof J.VariableDeclarations variableDeclarations) {
             if (variableDeclarations.getModifiers().isEmpty()) {
-                variableDeclarations = updateModifiers(variableDeclarations, !((J.VariableDeclarations) p).getLeadingAnnotations().isEmpty());
+                variableDeclarations = updateModifiers(variableDeclarations, !variableDeclarations.getLeadingAnnotations().isEmpty());
                 variableDeclarations = updateDeclarations(variableDeclarations);
                 return variableDeclarations;
             }
@@ -196,8 +194,8 @@ public class FinalizeMethodArguments extends Recipe {
 
     private boolean hasFinalModifiers(final List<Statement> parameters) {
         return parameters.stream().allMatch(p -> {
-            if (p instanceof J.VariableDeclarations) {
-                final List<J.Modifier> modifiers = ((J.VariableDeclarations) p).getModifiers();
+            if (p instanceof J.VariableDeclarations declarations) {
+                final List<J.Modifier> modifiers = declarations.getModifiers();
                 return !modifiers.isEmpty()
                        && modifiers.stream()
                                .allMatch(m -> m.getType().equals(J.Modifier.Type.Final));
@@ -207,6 +205,6 @@ public class FinalizeMethodArguments extends Recipe {
     }
 
     private boolean isEmpty(final List<Statement> parameters) {
-        return parameters.size() == 1 && (parameters.get(0) instanceof J.Empty);
+        return parameters.size() == 1 && (parameters.getFirst() instanceof J.Empty);
     }
 }

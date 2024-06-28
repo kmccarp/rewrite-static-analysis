@@ -43,8 +43,10 @@ public class TernaryOperatorsShouldNotBeNested extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Nested ternary operators can be hard to read quickly. Prefer simpler constructs for improved readability. " +
-                "If supported, this recipe will try to replace nested ternaries with switch expressions.";
+        return """
+                Nested ternary operators can be hard to read quickly. Prefer simpler constructs for improved readability. \
+                If supported, this recipe will try to replace nested ternaries with switch expressions.\
+                """;
     }
     @Override
     public Set<String> getTags() {
@@ -136,10 +138,10 @@ public class TernaryOperatorsShouldNotBeNested extends Recipe {
 
         private static Optional<J.Ternary> findTernary(Statement parent) {
             J possibleTernary = parent;
-            if (parent instanceof J.Return) {
-                possibleTernary = ((J.Return) parent).getExpression();
-            } else if (parent instanceof J.Lambda) {
-                possibleTernary = ((J.Lambda) parent).getBody();
+            if (parent instanceof J.Return return1) {
+                possibleTernary = return1.getExpression();
+            } else if (parent instanceof J.Lambda lambda) {
+                possibleTernary = lambda.getBody();
             }
             if (possibleTernary instanceof J.Ternary) {
                 return Optional.of(possibleTernary).map(J.Ternary.class::cast);
@@ -174,9 +176,8 @@ public class TernaryOperatorsShouldNotBeNested extends Recipe {
                     return Collections.emptyList();
                 }
                 J.Ternary nested = (J.Ternary) next.getFalsePart();
-                if (!findConditionIdentifier(nested)
-                        .filter(found -> isEqualVariable(switchVar, found))
-                        .isPresent()) {
+                if (findConditionIdentifier(nested)
+                        .filter(found -> isEqualVariable(switchVar, found)).isEmpty()) {
                     return Collections.emptyList();
                 }
                 nestList.add(next);
@@ -195,7 +196,7 @@ public class TernaryOperatorsShouldNotBeNested extends Recipe {
         }
 
         private J.SwitchExpression toSwitch(final J.Identifier switchVar, final List<J.Ternary> nestList) {
-            J.Ternary last = nestList.get(nestList.size() - 1);
+            J.Ternary last = nestList.getLast();
             return new J.SwitchExpression(
                     Tree.randomId(),
                     Space.SINGLE_SPACE,
@@ -220,12 +221,12 @@ public class TernaryOperatorsShouldNotBeNested extends Recipe {
                 J.MethodInvocation inv = ((J.MethodInvocation) ternary.getCondition());
                 if (isObjectsEquals(inv)) {
                     maybeRemoveImport("java.util.Objects");
-                    compare = isVariable(inv.getArguments().get(0))
+                    compare = isVariable(inv.getArguments().getFirst())
                             ? inv.getArguments().get(1)
-                            : inv.getArguments().get(0);
+                            : inv.getArguments().getFirst();
                 } else {
                     compare = isEqualVariable(switchVar, inv.getSelect())
-                            ? inv.getArguments().get(0)
+                            ? inv.getArguments().getFirst()
                             : inv.getSelect();
                 }
             } else if (isEqualsBinary(ternary.getCondition())) {
@@ -281,10 +282,10 @@ public class TernaryOperatorsShouldNotBeNested extends Recipe {
                     J other = null;
                     if (isVariable(inv.getSelect())) {
                         result = (J.Identifier) inv.getSelect();
-                        other = inv.getArguments().get(0);
+                        other = inv.getArguments().getFirst();
                     }
-                    if (inv.getArguments().get(0) instanceof J.Identifier) {
-                        result = (J.Identifier) inv.getArguments().get(0);
+                    if (inv.getArguments().getFirst() instanceof J.Identifier) {
+                        result = (J.Identifier) inv.getArguments().getFirst();
                         other = inv.getSelect();
                     }
                     if (!isConstant(other)) {
@@ -355,7 +356,7 @@ public class TernaryOperatorsShouldNotBeNested extends Recipe {
         }
 
         private static boolean isEqualsBinary(J maybeEqualsBinary) {
-            return maybeEqualsBinary instanceof J.Binary && ((J.Binary) maybeEqualsBinary).getOperator().equals(Equal);
+            return maybeEqualsBinary instanceof J.Binary b && b.getOperator().equals(Equal);
         }
     }
 

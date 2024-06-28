@@ -47,10 +47,10 @@ public class LambdaBlockToExpression extends Recipe {
                         if (lambda.getBody() instanceof J.Block) {
                             List<Statement> statements = ((J.Block) lambda.getBody()).getStatements();
                             if (statements.size() == 1) {
-                                Statement statement = statements.get(0);
+                                Statement statement = statements.getFirst();
                                 Space prefix = statement.getPrefix();
-                                if (statement instanceof J.Return) {
-                                    Expression expression = ((J.Return) statement).getExpression();
+                                if (statement instanceof J.Return return1) {
+                                    Expression expression = return1.getExpression();
                                     if (prefix.getComments().isEmpty()) {
                                         return l.withBody(expression);
                                     } else {

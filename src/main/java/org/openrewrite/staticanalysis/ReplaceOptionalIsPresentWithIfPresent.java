@@ -103,7 +103,7 @@ public class ReplaceOptionalIsPresentWithIfPresent extends Recipe {
 
             String uniqueLambdaParameterName = VariableNameUtils.generateVariableName("obj", nameScope,
                     VariableNameUtils.GenerationStrategy.INCREMENT_NUMBER);
-            String template = String.format("%s.ifPresent(%s -> #{any()})", methodSelector,
+            String template = "%s.ifPresent(%s -> #{any()})".formatted(methodSelector,
                     uniqueLambdaParameterName);
             J ifPresentMi = JavaTemplate.builder(template)
                     .contextSensitive()
@@ -115,8 +115,8 @@ public class ReplaceOptionalIsPresentWithIfPresent extends Recipe {
 
             /* replace Optional#get to lambda parameter */
             J.Identifier lambdaParameterIdentifier =
-                    ((J.VariableDeclarations) ((J.Lambda) ((J.MethodInvocation) ifPresentMi).getArguments().get(0))
-                            .getParameters().getParameters().get(0)).getVariables().get(0).getName();
+                    ((J.VariableDeclarations) ((J.Lambda) ((J.MethodInvocation) ifPresentMi).getArguments().getFirst())
+                            .getParameters().getParameters().getFirst()).getVariables().getFirst().getName();
             lambdaAccessibleVariables.add(lambdaParameterIdentifier);
             return ReplaceMethodCallWithVariableVisitor.replace(ifPresentMi, ctx, lambdaParameterIdentifier,
                     optionalVariable);

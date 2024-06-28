@@ -65,7 +65,7 @@ public class CompareEnumsWithEqualityOperator extends Recipe {
                     return autoFormat(JavaTemplate
                             .builder(code)
                             .build()
-                            .apply(updateCursor(m), m.getCoordinates().replace(), m.getSelect(), m.getArguments().get(0)), ctx);
+                            .apply(updateCursor(m), m.getCoordinates().replace(), m.getSelect(), m.getArguments().getFirst()), ctx);
                 }
                 return m;
             }

@@ -76,7 +76,7 @@ public class NoDoubleBraceInitialization extends Recipe {
             }
             if (nc.getBody() != null && !nc.getBody().getStatements().isEmpty()
                 && nc.getBody().getStatements().size() == 1
-                && nc.getBody().getStatements().get(0) instanceof J.Block
+                && nc.getBody().getStatements().getFirst() instanceof J.Block
                 && getCursor().getParent(3) != null) {
                 return TypeUtils.isAssignableTo(MAP_TYPE, nc.getType())
                        || TypeUtils.isAssignableTo(LIST_TYPE, nc.getType())
@@ -93,7 +93,7 @@ public class NoDoubleBraceInitialization extends Recipe {
                 Cursor parentBlockCursor = getCursor().dropParentUntil(J.Block.class::isInstance);
                 J.VariableDeclarations.NamedVariable var = getCursor().firstEnclosing(J.VariableDeclarations.NamedVariable.class);
                 //noinspection ConstantConditions
-                J.Block secondBlock = (J.Block) nc.getBody().getStatements().get(0);
+                J.Block secondBlock = (J.Block) nc.getBody().getStatements().getFirst();
                 List<Statement> initStatements = secondBlock.getStatements();
 
                 boolean maybeMistakenlyMissedAddingElement = !initStatements.isEmpty()
@@ -124,7 +124,7 @@ public class NoDoubleBraceInitialization extends Recipe {
                             JavaTemplate template = JavaTemplate.builder(newInitializer).imports(fq.getFullyQualifiedName()).build();
                             nc = template.apply(getCursor(), nc.getCoordinates().replace());
                             initStatements = addSelectToInitStatements(initStatements, var.getName(), ctx);
-                            initStatements.add(0, new J.Assignment(Tree.randomId(), Space.EMPTY, Markers.EMPTY, var.getName().withId(UUID.randomUUID()), JLeftPadded.build(nc), fq));
+                            initStatements.addFirst(new J.Assignment(Tree.randomId(), Space.EMPTY, Markers.EMPTY, var.getName().withId(UUID.randomUUID()), JLeftPadded.build(nc), fq));
                             parentBlockCursor.computeMessageIfAbsent("INIT_STATEMENTS", v -> new HashMap<Statement, List<Statement>>()).put(varDeclsCursor.getValue(), initStatements);
                         }
                     } else if (parentBlockCursor.getParent().getValue() instanceof J.MethodDeclaration) {

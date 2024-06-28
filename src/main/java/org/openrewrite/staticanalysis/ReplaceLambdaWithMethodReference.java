@@ -77,17 +77,16 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
             updateCursor(l);
 
             J body = l.getBody();
-            if (body instanceof J.Block && ((J.Block) body).getStatements().size() == 1) {
-                Statement statement = ((J.Block) body).getStatements().get(0);
-                if (statement instanceof J.Return) {
-                    body = ((J.Return) statement).getExpression();
+            if (body instanceof J.Block block && block.getStatements().size() == 1) {
+                Statement statement = block.getStatements().getFirst();
+                if (statement instanceof J.Return return1) {
+                    body = return1.getExpression();
                 } else {
                     body = statement;
                 }
             }
 
-            if (body instanceof J.InstanceOf) {
-                J.InstanceOf instanceOf = (J.InstanceOf) body;
+            if (body instanceof J.InstanceOf instanceOf) {
                 J j = instanceOf.getClazz();
                 if ((j instanceof J.Identifier || j instanceof J.FieldAccess) &&
                     instanceOf.getExpression() instanceof J.Identifier) {
@@ -104,11 +103,10 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
                     }
                 }
                 return l;
-            } else if (body instanceof J.TypeCast && l.getParameters().getParameters().size() == 1) {
-                J.TypeCast cast = (J.TypeCast) body;
-                J param = l.getParameters().getParameters().get(0);
-                if (cast.getExpression() instanceof J.Identifier && param instanceof J.VariableDeclarations &&
-                    ((J.Identifier) cast.getExpression()).getSimpleName().equals(((J.VariableDeclarations) param).getVariables().get(0).getSimpleName())) {
+            } else if (body instanceof J.TypeCast cast && l.getParameters().getParameters().size() == 1) {
+                J param = l.getParameters().getParameters().getFirst();
+                if (cast.getExpression() instanceof J.Identifier && param instanceof J.VariableDeclarations declarations &&
+                    ((J.Identifier) cast.getExpression()).getSimpleName().equals(declarations.getVariables().getFirst().getSimpleName())) {
                     J.ControlParentheses<TypeTree> j = cast.getClazz();
                     J tree = j.getTree();
                     if ((tree instanceof J.Identifier || tree instanceof J.FieldAccess) &&
@@ -130,8 +128,7 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
             }
 
             String code = "";
-            if (body instanceof J.Binary) {
-                J.Binary binary = (J.Binary) body;
+            if (body instanceof J.Binary binary) {
                 if ((binary.getOperator() == J.Binary.Type.Equal || binary.getOperator() == J.Binary.Type.NotEqual) &&
                     isNullCheck(binary.getLeft(), binary.getRight()) ||
                     isNullCheck(binary.getRight(), binary.getLeft())) {
@@ -144,10 +141,8 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
                     doAfterVisit(service(ImportService.class).shortenFullyQualifiedTypeReferencesIn(updated));
                     return updated;
                 }
-            } else if (body instanceof MethodCall) {
-                MethodCall method = (MethodCall) body;
-                if (method instanceof J.NewClass) {
-                    J.NewClass nc = (J.NewClass) method;
+            } else if (body instanceof MethodCall method) {
+                if (method instanceof J.NewClass nc) {
                     if (nc.getBody() != null) {
                         return l;
                     } else {
@@ -173,7 +168,7 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
                 JavaType.Method methodType = method.getMethodType();
                 if (methodType != null && !isMethodReferenceAmbiguous(methodType)) {
                     Expression select =
-                            method instanceof J.MethodInvocation ? ((J.MethodInvocation) method).getSelect() : null;
+                            method instanceof J.MethodInvocation mi ? mi.getSelect() : null;
                     if (methodType.hasFlags(Flag.Static) ||
                         methodSelectMatchesFirstLambdaParameter(method, lambda)) {
                         if (method.getType() instanceof JavaType.Parameterized &&
@@ -184,15 +179,15 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
                         J.MemberReference updated = newStaticMethodReference(methodType, true, lambda.getType()).withPrefix(lambda.getPrefix());
                         doAfterVisit(service(ImportService.class).shortenFullyQualifiedTypeReferencesIn(updated));
                         return updated;
-                    } else if (method instanceof J.NewClass) {
-                        NameTree clazz = ((J.NewClass) method).getClazz();
-                        clazz = clazz instanceof J.ParameterizedType ? ((J.ParameterizedType) clazz).getClazz() : clazz;
+                    } else if (method instanceof J.NewClass class1) {
+                        NameTree clazz = class1.getClazz();
+                        clazz = clazz instanceof J.ParameterizedType pt ? pt.getClazz() : clazz;
                         return newInstanceMethodReference(clazz.withPrefix(Space.EMPTY), "new", methodType, lambda.getType()).withPrefix(lambda.getPrefix());
                     } else if (select != null) {
                         return newInstanceMethodReference(select, methodType, lambda.getType()).withPrefix(lambda.getPrefix());
                     } else {
                         Cursor owner = getCursor().dropParentUntil(is -> is instanceof J.ClassDeclaration ||
-                                                                         (is instanceof J.NewClass && ((J.NewClass) is).getBody() != null) ||
+                                                                         (is instanceof J.NewClass nc && nc.getBody() != null) ||
                                                                          is instanceof J.Lambda);
                         return JavaElementFactory.newInstanceMethodReference(
                                 JavaElementFactory.newThis(owner.<TypedTree>getValue().getType()),
@@ -207,18 +202,18 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
         }
 
         private boolean hasSelectWithPotentialSideEffects(MethodCall method) {
-            return method instanceof J.MethodInvocation &&
-                   ((J.MethodInvocation) method).getSelect() instanceof MethodCall;
+            return method instanceof J.MethodInvocation mi &&
+                   mi.getSelect() instanceof MethodCall;
         }
 
         private boolean hasSelectWhoseReferenceMightChange(MethodCall method) {
-            if (method instanceof J.MethodInvocation) {
-                Expression select = ((J.MethodInvocation) method).getSelect();
-                if (select instanceof J.Identifier) {
-                    JavaType.Variable fieldType = ((J.Identifier) select).getFieldType();
+            if (method instanceof J.MethodInvocation invocation) {
+                Expression select = invocation.getSelect();
+                if (select instanceof J.Identifier identifier) {
+                    JavaType.Variable fieldType = identifier.getFieldType();
                     return fieldType != null && fieldType.getOwner() instanceof JavaType.Class && !fieldType.hasFlags(Flag.Final);
-                } else if (select instanceof J.FieldAccess) {
-                    JavaType.Variable fieldType = ((J.FieldAccess) select).getName().getFieldType();
+                } else if (select instanceof J.FieldAccess access) {
+                    JavaType.Variable fieldType = access.getName().getFieldType();
                     return fieldType != null && fieldType.getOwner() instanceof JavaType.Class && !fieldType.hasFlags(Flag.Final);
                 }
             }
@@ -237,7 +232,7 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
                 return true;
             }
             if (!static_ && methodSelectMatchesFirstLambdaParameter(method, lambda)) {
-                methodArgs.add(0, ((J.MethodInvocation) method).getSelect());
+                methodArgs.addFirst(((J.MethodInvocation) method).getSelect());
             }
             if (methodArgs.size() != lambdaParameters.size()) {
                 return false;
@@ -257,16 +252,16 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
 
         private static List<Expression> getMethodArguments(MethodCall method) {
             List<Expression> list = new ArrayList<>();
-            if (method instanceof J.MethodInvocation) {
+            if (method instanceof J.MethodInvocation invocation) {
                 // avoid additional `ArrayList` allocation by using `JContainer#getElements()`
-                for (Expression a : ((J.MethodInvocation) method).getPadding().getArguments().getElements()) {
+                for (Expression a : invocation.getPadding().getArguments().getElements()) {
                     if (!(a instanceof J.Empty)) {
                         list.add(a);
                     }
                 }
-            } else if (method instanceof J.NewClass) {
+            } else if (method instanceof J.NewClass class1) {
                 // avoid additional `ArrayList` allocation by using `JContainer#getElements()`
-                for (Expression a : ((J.NewClass) method).getPadding().getArguments().getElements()) {
+                for (Expression a : class1.getPadding().getArguments().getElements()) {
                     if (!(a instanceof J.Empty)) {
                         list.add(a);
                     }
@@ -284,8 +279,8 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
         private static List<J.VariableDeclarations.NamedVariable> getLambdaParameters(J.Lambda lambda) {
             List<J.VariableDeclarations.NamedVariable> list = new ArrayList<>();
             for (J j : lambda.getParameters().getParameters()) {
-                if (j instanceof J.VariableDeclarations) {
-                    J.VariableDeclarations.NamedVariable namedVariable = ((J.VariableDeclarations) j).getVariables().get(0);
+                if (j instanceof J.VariableDeclarations declarations) {
+                    J.VariableDeclarations.NamedVariable namedVariable = declarations.getVariables().getFirst();
                     list.add(namedVariable);
                 }
             }
@@ -296,18 +291,18 @@ public class ReplaceLambdaWithMethodReference extends Recipe {
             if (!(method instanceof J.MethodInvocation) ||
                 !(((J.MethodInvocation) method).getSelect() instanceof J.Identifier) ||
                 lambda.getParameters().getParameters().isEmpty() ||
-                !(lambda.getParameters().getParameters().get(0) instanceof J.VariableDeclarations)) {
+                !(lambda.getParameters().getParameters().getFirst() instanceof J.VariableDeclarations)) {
                 return false;
             }
             J.VariableDeclarations firstLambdaParameter = (J.VariableDeclarations) lambda.getParameters()
-                    .getParameters().get(0);
+                    .getParameters().getFirst();
             return ((J.Identifier) ((J.MethodInvocation) method).getSelect()).getFieldType() ==
-                   firstLambdaParameter.getVariables().get(0).getVariableType();
+                   firstLambdaParameter.getVariables().getFirst().getVariableType();
         }
 
         private boolean isNullCheck(J j1, J j2) {
-            return j1 instanceof J.Identifier && j2 instanceof J.Literal &&
-                   "null".equals(((J.Literal) j2).getValueSource());
+            return j1 instanceof J.Identifier && j2 instanceof J.Literal l &&
+                   "null".equals(l.getValueSource());
         }
 
         private boolean isMethodReferenceAmbiguous(JavaType.Method method) {

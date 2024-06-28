@@ -55,8 +55,8 @@ public class UseSystemLineSeparator extends Recipe {
 
                 if (GET_PROPERTY.matches(method)) {
                     String param = "";
-                    if (method.getArguments().size() == 1 && method.getArguments().get(0) instanceof J.Literal) {
-                        Object value = ((J.Literal) method.getArguments().get(0)).getValue();
+                    if (method.getArguments().size() == 1 && method.getArguments().getFirst() instanceof J.Literal) {
+                        Object value = ((J.Literal) method.getArguments().getFirst()).getValue();
                         if (value == null) {
                             return method;
                         }

@@ -51,11 +51,13 @@ public class ReplaceDuplicateStringLiterals extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replaces `String` literals with a length of 5 or greater repeated a minimum of 3 times. " +
-               "Qualified `String` literals include final Strings, method invocations, and new class invocations. " +
-               "Adds a new `private static final String` or uses an existing equivalent class field. " +
-               "A new variable name will be generated based on the literal value if an existing field does not exist. " +
-               "The generated name will append a numeric value to the variable name if a name already exists in the compilation unit.";
+        return """
+               Replaces `String` literals with a length of 5 or greater repeated a minimum of 3 times. \
+               Qualified `String` literals include final Strings, method invocations, and new class invocations. \
+               Adds a new `private static final String` or uses an existing equivalent class field. \
+               A new variable name will be generated based on the literal value if an existing field does not exist. \
+               The generated name will append a numeric value to the variable name if a name already exists in the compilation unit.\
+               """;
     }
 
     @Override
@@ -73,8 +75,7 @@ public class ReplaceDuplicateStringLiterals extends Recipe {
         return Preconditions.check(new UsesType<>("java.lang.String", false), new JavaVisitor<ExecutionContext>() {
             @Override
             public J visit(@Nullable Tree tree, ExecutionContext ctx) {
-                if (tree instanceof JavaSourceFile) {
-                    JavaSourceFile cu = (JavaSourceFile) tree;
+                if (tree instanceof JavaSourceFile cu) {
                     Optional<JavaSourceSet> sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class);
                     if(!Boolean.TRUE.equals(includeTestSources) && !(sourceSet.isPresent() && "main".equals(sourceSet.get().getName()))) {
                         return cu;

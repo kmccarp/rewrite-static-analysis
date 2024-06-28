@@ -89,8 +89,7 @@ public class RemoveUnusedPrivateFields extends Recipe {
                 List<Statement> statements = cd.getBody().getStatements();
                 for (int i = 0; i < statements.size(); i++) {
                     Statement statement = statements.get(i);
-                    if (statement instanceof J.VariableDeclarations) {
-                        J.VariableDeclarations vd = (J.VariableDeclarations) statement;
+                    if (statement instanceof J.VariableDeclarations vd) {
                         // RSPEC-S1068 does not apply serialVersionUID of Serializable classes, or fields with annotations.
                         if (!(skipSerialVersionUID && isSerialVersionUid(vd)) &&
                             vd.getLeadingAnnotations().isEmpty() &&
@@ -98,9 +97,7 @@ public class RemoveUnusedPrivateFields extends Recipe {
                             Statement nextStatement = i < statements.size() - 1 ? statements.get(i + 1) : null;
                             checkFields.add(new CheckField(vd, nextStatement));
                         }
-                    } else if (statement instanceof J.MethodDeclaration) {
-                        // RSPEC-S1068 does not apply fields from classes with native methods.
-                        J.MethodDeclaration md = (J.MethodDeclaration) statement;
+                    } else if (statement instanceof J.MethodDeclaration md) {
                         if (md.hasModifier(J.Modifier.Type.Native)) {
                             return cd;
                         }
@@ -238,7 +235,7 @@ public class RemoveUnusedPrivateFields extends Recipe {
                 if (prefix.getComments().size() > 0 && !prefix.getWhitespace().contains("\n")) {
                     return s.withPrefix(prefix
                             // Copy suffix to prefix
-                            .withWhitespace(prefix.getComments().get(0).getSuffix())
+                            .withWhitespace(prefix.getComments().getFirst().getSuffix())
                             // Remove the first comment
                             .withComments(prefix.getComments().subList(1, prefix.getComments().size())
                             ));
@@ -256,7 +253,7 @@ public class RemoveUnusedPrivateFields extends Recipe {
                 // If we have at least one comment and there is no newline
                 if (end.getComments().size() > 0 && !end.getWhitespace().contains("\n")) {
                     return c.withBody(c.getBody().withEnd(end
-                            .withWhitespace(end.getComments().get(0).getSuffix())
+                            .withWhitespace(end.getComments().getFirst().getSuffix())
                             .withComments(end.getComments().subList(1, end.getComments().size()))
                     ));
                 }

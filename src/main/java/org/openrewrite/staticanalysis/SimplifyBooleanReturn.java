@@ -74,8 +74,8 @@ public class SimplifyBooleanReturn extends Recipe {
                     thenHasOnlyReturnStatement(iff) &&
                     elseWithOnlyReturn(i)) {
                     List<Statement> followingStatements = followingStatements();
-                    Optional<Expression> singleFollowingStatement = Optional.ofNullable(followingStatements.isEmpty() ? null : followingStatements.get(0))
-                            .flatMap(stat -> Optional.ofNullable(stat instanceof J.Return ? (J.Return) stat : null))
+                    Optional<Expression> singleFollowingStatement = Optional.ofNullable(followingStatements.isEmpty() ? null : followingStatements.getFirst())
+                            .flatMap(stat -> Optional.ofNullable(stat instanceof J.Return r ? r : null))
                             .filter(r -> r.getComments().isEmpty())
                             .map(J.Return::getExpression);
 
@@ -92,9 +92,9 @@ public class SimplifyBooleanReturn extends Recipe {
 
                         if (isLiteralTrue(return_.getExpression())) {
                             if (singleFollowingStatement.map(this::isLiteralFalse).orElse(false) && i.getElsePart() == null) {
-                                doAfterVisit(new DeleteStatement<>(followingStatements().get(0)));
+                                doAfterVisit(new DeleteStatement<>(followingStatements().getFirst()));
                                 return maybeAutoFormat(return_, return_.withExpression(ifCondition), ctx, parent);
-                            } else if (!singleFollowingStatement.isPresent() &&
+                            } else if (singleFollowingStatement.isEmpty() &&
                                        getReturnExprIfOnlyStatementInElseThen(i).map(this::isLiteralFalse).orElse(false)) {
                                 if (i.getElsePart() != null) {
                                     doAfterVisit(new DeleteStatement<>(i.getElsePart().getBody()));
@@ -105,9 +105,9 @@ public class SimplifyBooleanReturn extends Recipe {
                             boolean returnThenPart = false;
 
                             if (singleFollowingStatement.map(this::isLiteralTrue).orElse(false) && i.getElsePart() == null) {
-                                doAfterVisit(new DeleteStatement<>(followingStatements().get(0)));
+                                doAfterVisit(new DeleteStatement<>(followingStatements().getFirst()));
                                 returnThenPart = true;
-                            } else if (!singleFollowingStatement.isPresent() && getReturnExprIfOnlyStatementInElseThen(i)
+                            } else if (singleFollowingStatement.isEmpty() && getReturnExprIfOnlyStatementInElseThen(i)
                                     .map(this::isLiteralTrue).orElse(false)) {
                                 if (i.getElsePart() != null) {
                                     doAfterVisit(new DeleteStatement<>(i.getElsePart().getBody()));
@@ -149,11 +149,11 @@ public class SimplifyBooleanReturn extends Recipe {
             }
 
             private boolean isLiteralTrue(@Nullable J tree) {
-                return tree instanceof J.Literal && ((J.Literal) tree).getValue() == Boolean.valueOf(true);
+                return tree instanceof J.Literal l && l.getValue() == Boolean.valueOf(true);
             }
 
             private boolean isLiteralFalse(@Nullable J tree) {
-                return tree instanceof J.Literal && ((J.Literal) tree).getValue() == Boolean.valueOf(false);
+                return tree instanceof J.Literal l && l.getValue() == Boolean.valueOf(false);
             }
 
             private Optional<J.Return> getReturnIfOnlyStatementInThen(J.If iff) {
@@ -162,8 +162,8 @@ public class SimplifyBooleanReturn extends Recipe {
                 }
                 if (iff.getThenPart() instanceof J.Block) {
                     J.Block then = (J.Block) iff.getThenPart();
-                    if (then.getStatements().size() == 1 && then.getStatements().get(0) instanceof J.Return) {
-                        return Optional.of((J.Return) then.getStatements().get(0));
+                    if (then.getStatements().size() == 1 && then.getStatements().getFirst() instanceof J.Return) {
+                        return Optional.of((J.Return) then.getStatements().getFirst());
                     }
                 }
                 return Optional.empty();
@@ -175,16 +175,16 @@ public class SimplifyBooleanReturn extends Recipe {
                 }
 
                 Statement else_ = iff2.getElsePart().getBody();
-                if (else_ instanceof J.Return) {
-                    return Optional.ofNullable(((J.Return) else_).getExpression());
+                if (else_ instanceof J.Return return1) {
+                    return Optional.ofNullable(return1.getExpression());
                 }
 
-                if (else_ instanceof J.Block) {
-                    List<Statement> statements = ((J.Block) else_).getStatements();
+                if (else_ instanceof J.Block block) {
+                    List<Statement> statements = block.getStatements();
                     if (statements.size() == 1) {
-                        J statement = statements.get(0);
-                        if (statement instanceof J.Return) {
-                            return Optional.ofNullable(((J.Return) statement).getExpression());
+                        J statement = statements.getFirst();
+                        if (statement instanceof J.Return return1) {
+                            return Optional.ofNullable(return1.getExpression());
                         }
                     }
                 }
@@ -203,7 +203,7 @@ public class SimplifyBooleanReturn extends Recipe {
                     return true;
                 }
                 if (else_.getBody() instanceof J.Block
-                    && !((J.Block) else_.getBody()).getStatements().get(0).getComments().isEmpty()) {
+                    && !((J.Block) else_.getBody()).getStatements().getFirst().getComments().isEmpty()) {
                     return true;
                 }
                 return false;

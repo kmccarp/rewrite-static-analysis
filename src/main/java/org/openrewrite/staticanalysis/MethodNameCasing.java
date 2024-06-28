@@ -61,9 +61,11 @@ public class MethodNameCasing extends ScanningRecipe<List<MethodNameCasing.Metho
 
     @Override
     public String getDescription() {
-        return "Fixes method names that do not follow standard naming conventions. " +
-                "For example, `String getFoo_bar()` would be adjusted to `String getFooBar()` " +
-                "and `int DoSomething()` would be adjusted to `int doSomething()`.";
+        return """
+                Fixes method names that do not follow standard naming conventions. \
+                For example, `String getFoo_bar()` would be adjusted to `String getFooBar()` \
+                and `int DoSomething()` would be adjusted to `int doSomething()`.\
+                """;
     }
 
     @Override
@@ -87,11 +89,10 @@ public class MethodNameCasing extends ScanningRecipe<List<MethodNameCasing.Metho
             UUID scope;
             @Override
             public J preVisit(J tree, ExecutionContext ctx) {
-                if (tree instanceof JavaSourceFile) {
+                if (tree instanceof JavaSourceFile cu) {
                     scope = tree.getId();
-                    JavaSourceFile cu = (JavaSourceFile) tree;
                     Optional<JavaSourceSet> sourceSet = cu.getMarkers().findFirst(JavaSourceSet.class);
-                    if (!sourceSet.isPresent()) {
+                    if (sourceSet.isEmpty()) {
                         stopAfterPreVisit();
                     } else if (!Boolean.TRUE.equals(includeTestSources) && !"main".equals(sourceSet.get().getName())) {
                         stopAfterPreVisit();
@@ -172,8 +173,7 @@ public class MethodNameCasing extends ScanningRecipe<List<MethodNameCasing.Metho
         return new JavaIsoVisitor<ExecutionContext>() {
             @Override
             public J visit(@Nullable Tree tree, ExecutionContext ctx) {
-                if (tree instanceof JavaSourceFile) {
-                    JavaSourceFile cu = (JavaSourceFile) tree;
+                if (tree instanceof JavaSourceFile cu) {
                     for (MethodNameChange nameChange : changes) {
                         if (!nameChange.isPrivateMethod() || tree.getId().equals(nameChange.getScope())) {
                             cu = (JavaSourceFile) nameChange.getRecipe().getVisitor().visitNonNull(cu, ctx);

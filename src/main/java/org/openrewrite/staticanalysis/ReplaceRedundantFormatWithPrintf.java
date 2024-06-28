@@ -79,7 +79,7 @@ public class ReplaceRedundantFormatWithPrintf extends Recipe {
                     return method;
                 }
 
-                Expression arg = method.getArguments().get(0);
+                Expression arg = method.getArguments().getFirst();
                 if (!(arg instanceof J.MethodInvocation)) {
                     return method;
                 }
@@ -119,7 +119,7 @@ public class ReplaceRedundantFormatWithPrintf extends Recipe {
                     printfArgs = ListUtils.concat(formatStringLiteral, formatStringArgs);
 
                     if (hasLocaleArg) {
-                        printfArgs = ListUtils.concat(originalFormatArgs.get(0), printfArgs);
+                        printfArgs = ListUtils.concat(originalFormatArgs.getFirst(), printfArgs);
                     }
                 } else {
                     printfArgs = originalFormatArgs;
@@ -134,15 +134,15 @@ public class ReplaceRedundantFormatWithPrintf extends Recipe {
                         code.append(", ");
                     }
                     code.append("#{any(");
-                    if (argType instanceof JavaType.GenericTypeVariable) {
-                        List<JavaType> bounds = ((JavaType.GenericTypeVariable) argType).getBounds();
+                    if (argType instanceof JavaType.GenericTypeVariable variable) {
+                        List<JavaType> bounds = variable.getBounds();
                         if (bounds.isEmpty()) {
                             code.append("Object");
                         } else {
-                            code.append(bounds.get(0));
+                            code.append(bounds.getFirst());
                         }
-                    } else if (argType instanceof JavaType.Parameterized) {
-                        code.append(((JavaType.Parameterized) argType).getType());
+                    } else if (argType instanceof JavaType.Parameterized parameterized) {
+                        code.append(parameterized.getType());
                     } else {
                         code.append(argType);
                     }

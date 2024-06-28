@@ -71,7 +71,7 @@ public class IndexOfChecksShouldUseAStartPosition extends Recipe {
                     b = b.withLeft(JavaTemplate.builder("#{any(java.lang.String)}, #{any(int)}").build()
                             .apply(cursor,
                                     m.getCoordinates().replaceArguments(),
-                                    m.getArguments().get(0),
+                                    m.getArguments().getFirst(),
                                     b.getRight()));
 
                     b = b.withRight(new J.Literal(

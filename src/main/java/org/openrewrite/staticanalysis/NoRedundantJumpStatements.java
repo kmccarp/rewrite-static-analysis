@@ -62,7 +62,7 @@ public class NoRedundantJumpStatements extends Recipe {
                 boolean thenIsOnlyContinue = i.getThenPart() instanceof J.Continue;
                 if (i.getThenPart() instanceof J.Block) {
                     J.Block then = (J.Block) i.getThenPart();
-                    thenIsOnlyContinue = then.getStatements().size() == 1 && then.getStatements().get(0) instanceof J.Continue;
+                    thenIsOnlyContinue = then.getStatements().size() == 1 && then.getStatements().getFirst() instanceof J.Continue;
                 }
 
                 if (getCursor().getParentOrThrow().getParentOrThrow().getValue() instanceof J.Block) {
@@ -70,10 +70,9 @@ public class NoRedundantJumpStatements extends Recipe {
                             .getParentTreeCursor()
                             .getValue();
 
-                    if (enclosing instanceof Loop) {
+                    if (enclosing instanceof Loop loop) {
                         if (thenIsOnlyContinue &&
                             i.getElsePart() != null && !(i.getElsePart().getBody() instanceof J.If)) {
-                            Loop loop = (Loop) enclosing;
                             if (loop.getBody() instanceof J.Block) {
                                 J.Block loopBlock = (J.Block) loop.getBody();
 

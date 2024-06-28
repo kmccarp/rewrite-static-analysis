@@ -60,7 +60,7 @@ public class EqualsToContentEquals extends Recipe {
             if (!EQUALS_MATCHER.matches(m)) {
                 return m;
             }
-            Expression equalsArgument = m.getArguments().get(0);
+            Expression equalsArgument = m.getArguments().getFirst();
             if (!TOSTRING_MATCHER.matches(equalsArgument)) {
                 return m;
             }

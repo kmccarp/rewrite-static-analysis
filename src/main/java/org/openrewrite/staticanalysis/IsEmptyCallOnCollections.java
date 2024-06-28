@@ -68,8 +68,7 @@ public class IsEmptyCallOnCollections extends Recipe {
                         || zeroRight && binary.getOperator() == J.Binary.Type.GreaterThan
                         || !zeroRight && binary.getOperator() == J.Binary.Type.LessThan) {
                         J maybeSizeCall = zeroRight ? binary.getLeft() : binary.getRight();
-                        if (maybeSizeCall instanceof J.MethodInvocation) {
-                            J.MethodInvocation maybeSizeCallMethod = (J.MethodInvocation) maybeSizeCall;
+                        if (maybeSizeCall instanceof J.MethodInvocation maybeSizeCallMethod) {
                             if (COLLECTION_SIZE.matches(maybeSizeCallMethod) && maybeSizeCallMethod.getMethodType() != null) {
                                 return newIsEmptyCall(maybeSizeCallMethod, binary.getCoordinates().replace(), binary.getOperator() != J.Binary.Type.Equal)
                                         .withPrefix(binary.getPrefix());
@@ -83,8 +82,7 @@ public class IsEmptyCallOnCollections extends Recipe {
                         || (oneRight && binary.getOperator() == J.Binary.Type.GreaterThanOrEqual)
                         || (!oneRight && binary.getOperator() == J.Binary.Type.LessThanOrEqual)) {
                         J maybeSizeCall = oneRight ? binary.getLeft() : binary.getRight();
-                        if (maybeSizeCall instanceof J.MethodInvocation) {
-                            J.MethodInvocation maybeSizeCallMethod = (J.MethodInvocation) maybeSizeCall;
+                        if (maybeSizeCall instanceof J.MethodInvocation maybeSizeCallMethod) {
                             if (COLLECTION_SIZE.matches(maybeSizeCallMethod) && maybeSizeCallMethod.getMethodType() != null) {
                                 return newIsEmptyCall(maybeSizeCallMethod, binary.getCoordinates().replace(),
                                         binary.getOperator() == J.Binary.Type.GreaterThanOrEqual || binary.getOperator() == J.Binary.Type.LessThanOrEqual)
@@ -113,11 +111,11 @@ public class IsEmptyCallOnCollections extends Recipe {
     }
 
     private static boolean isZero(Expression expression) {
-        return expression instanceof J.Literal && Objects.equals(0, ((J.Literal) expression).getValue());
+        return expression instanceof J.Literal l && Objects.equals(0, l.getValue());
     }
 
     private static boolean isOne(Expression expression) {
-        return expression instanceof J.Literal && Objects.equals(1, ((J.Literal) expression).getValue());
+        return expression instanceof J.Literal l && Objects.equals(1, l.getValue());
     }
 
 }

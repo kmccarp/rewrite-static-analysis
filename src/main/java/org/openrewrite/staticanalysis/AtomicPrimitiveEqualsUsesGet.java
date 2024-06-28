@@ -69,22 +69,22 @@ public class AtomicPrimitiveEqualsUsesGet extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, ExecutionContext ctx) {
                 J.MethodInvocation mi = (J.MethodInvocation) super.visitMethodInvocation(method, ctx);
                 if (mi.getSelect() != null && isAtomicEqualsType(mi.getSelect().getType()) && aiMethodMatcher.matches(mi)
-                    && TypeUtils.isOfType(mi.getSelect().getType(), mi.getArguments().get(0).getType())) {
+                    && TypeUtils.isOfType(mi.getSelect().getType(), mi.getArguments().getFirst().getType())) {
                     JavaType.FullyQualified fqt = TypeUtils.asFullyQualified(mi.getSelect().getType());
                     if (fqt != null) {
                         String templateString = "#{any(" + fqt.getFullyQualifiedName() + ")}.get() == #{any(" + fqt.getFullyQualifiedName() + ")}.get()";
                         return JavaTemplate.builder(templateString)
                                 .imports(fqt.getFullyQualifiedName())
                                 .build()
-                                .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().get(0));
+                                .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getSelect(), mi.getArguments().getFirst());
                     }
                 }
                 return mi;
             }
 
             private boolean isAtomicEqualsType(@Nullable JavaType type) {
-                return type instanceof JavaType.FullyQualified &&
-                       ATOMIC_PRIMITIVE_TYPES.contains(((JavaType.FullyQualified) type).getFullyQualifiedName());
+                return type instanceof JavaType.FullyQualified fq &&
+                       ATOMIC_PRIMITIVE_TYPES.contains(fq.getFullyQualifiedName());
             }
         });
     }

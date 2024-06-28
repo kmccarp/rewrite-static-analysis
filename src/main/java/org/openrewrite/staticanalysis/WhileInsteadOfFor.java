@@ -57,8 +57,8 @@ public class WhileInsteadOfFor extends Recipe {
 
             @Override
             public J visitForLoop(J.ForLoop forLoop, ExecutionContext ctx) {
-                if (forLoop.getControl().getInit().get(0) instanceof J.Empty &&
-                    forLoop.getControl().getUpdate().get(0) instanceof J.Empty &&
+                if (forLoop.getControl().getInit().getFirst() instanceof J.Empty &&
+                    forLoop.getControl().getUpdate().getFirst() instanceof J.Empty &&
                     !(forLoop.getControl().getCondition() instanceof J.Empty)
                 ) {
                     J.WhileLoop w = whileLoop.apply(getCursor(), forLoop.getCoordinates().replace(), forLoop.getControl().getCondition());

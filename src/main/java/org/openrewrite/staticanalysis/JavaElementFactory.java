@@ -48,12 +48,12 @@ final class JavaElementFactory {
     static Expression className(JavaType type, boolean qualified) {
         Expression name = null;
         String qualifiedName;
-        if (type instanceof JavaType.Parameterized) {
-            type = ((JavaType.Parameterized) type).getType();
+        if (type instanceof JavaType.Parameterized parameterized) {
+            type = parameterized.getType();
         }
-        if (qualified && type instanceof JavaType.FullyQualified && ((JavaType.FullyQualified) type).getOwningClass() != null) {
-            Expression expression = className(((JavaType.FullyQualified) type).getOwningClass(), true);
-            String simpleName = ((JavaType.FullyQualified) type).getClassName();
+        if (qualified && type instanceof JavaType.FullyQualified fullyQualified && fullyQualified.getOwningClass() != null) {
+            Expression expression = className(fullyQualified.getOwningClass(), true);
+            String simpleName = fullyQualified.getClassName();
             return new J.FieldAccess(
                     randomId(),
                     Space.EMPTY,
@@ -74,8 +74,8 @@ final class JavaElementFactory {
                     type
             );
         }
-        if (type instanceof JavaType.FullyQualified) {
-            qualifiedName = qualified ? ((JavaType.FullyQualified) type).getFullyQualifiedName() : ((JavaType.FullyQualified) type).getClassName();
+        if (type instanceof JavaType.FullyQualified fullyQualified) {
+            qualifiedName = qualified ? fullyQualified.getFullyQualifiedName() : fullyQualified.getClassName();
         } else {
             qualifiedName = type.toString();
         }
@@ -144,8 +144,7 @@ final class JavaElementFactory {
 
     @Nullable
     private static JavaType.Class getClassType(@Nullable JavaType type) {
-        if (type instanceof JavaType.Class) {
-            JavaType.Class classType = (JavaType.Class) type;
+        if (type instanceof JavaType.Class classType) {
             if (classType.getFullyQualifiedName().equals("java.lang.Class")) {
                 return classType;
             } else if (classType.getFullyQualifiedName().equals("java.lang.Object")) {
@@ -158,16 +157,16 @@ final class JavaElementFactory {
             } else {
                 return getClassType(classType.getSupertype());
             }
-        } else if (type instanceof JavaType.Parameterized) {
-            return getClassType(((JavaType.Parameterized) type).getType());
-        } else if (type instanceof JavaType.GenericTypeVariable) {
-            return getClassType(((JavaType.GenericTypeVariable) type).getBounds().get(0));
-        } else if (type instanceof JavaType.Array) {
-            return getClassType(((JavaType.Array) type).getElemType());
-        } else if (type instanceof JavaType.Variable) {
-            return getClassType(((JavaType.Variable) type).getOwner());
-        } else if (type instanceof JavaType.Method) {
-            return getClassType(((JavaType.Method) type).getDeclaringType());
+        } else if (type instanceof JavaType.Parameterized parameterized) {
+            return getClassType(parameterized.getType());
+        } else if (type instanceof JavaType.GenericTypeVariable variable) {
+            return getClassType(variable.getBounds().getFirst());
+        } else if (type instanceof JavaType.Array array) {
+            return getClassType(array.getElemType());
+        } else if (type instanceof JavaType.Variable variable) {
+            return getClassType(variable.getOwner());
+        } else if (type instanceof JavaType.Method method) {
+            return getClassType(method.getDeclaringType());
         }
         return null;
     }

@@ -58,7 +58,7 @@ public class ReplaceValidateNotNullHavingVarargsWithObjectsRequireNonNull extend
                 List<Expression> arguments = mi.getArguments();
                 String template = arguments.size() == 2
                         ? "Objects.requireNonNull(#{any()}, #{any(java.lang.String)})"
-                        : String.format("Objects.requireNonNull(#{any()}, () -> String.format(#{any(java.lang.String)}, %s))",
+                        : "Objects.requireNonNull(#{any()}, () -> String.format(#{any(java.lang.String)}, %s))".formatted(
                         String.join(", ", Collections.nCopies(arguments.size() - 2, "#{any()}")));
 
 
@@ -76,8 +76,8 @@ public class ReplaceValidateNotNullHavingVarargsWithObjectsRequireNonNull extend
                 }
 
                 // Retain comments and whitespace around lambda arguments
-                Expression arg0 = arguments.get(0);
-                arguments.remove(0);
+                Expression arg0 = arguments.getFirst();
+                arguments.removeFirst();
                 J.Lambda lambda = (J.Lambda) mi.getArguments().get(1);
                 J.MethodInvocation stringFormatMi = (J.MethodInvocation) lambda.getBody();
 

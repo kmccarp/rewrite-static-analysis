@@ -198,8 +198,7 @@ public class FinalizePrivateFields extends Recipe {
                 if (lastId != null && assignedCountMap.containsKey(lastId.getFieldType())) {
                     privateField = lastId.getFieldType();
                 }
-            } else if (expression instanceof J.Identifier) {
-                J.Identifier i = (J.Identifier) expression;
+            } else if (expression instanceof J.Identifier i) {
                 if (assignedCountMap.containsKey(i.getFieldType())) {
                     privateField = i.getFieldType();
                 }
@@ -236,7 +235,7 @@ public class FinalizePrivateFields extends Recipe {
          * @return true if the cursor is in a constructor or an initializer block (both static or non-static)
          */
         private static boolean isInitializedByClass(Cursor cursor, boolean privateFieldIsStatic) {
-            Object parent = cursor.dropParentWhile(p -> (p instanceof J.Block && !((J.Block) p).isStatic())
+            Object parent = cursor.dropParentWhile(p -> (p instanceof J.Block b && !b.isStatic())
                                                         || p instanceof JRightPadded
                                                         || p instanceof JLeftPadded)
                     .getValue();
@@ -246,8 +245,8 @@ public class FinalizePrivateFields extends Recipe {
             if (privateFieldIsStatic) {
                 return false;
             }
-            if (parent instanceof J.MethodDeclaration) {
-                return ((J.MethodDeclaration) parent).isConstructor();
+            if (parent instanceof J.MethodDeclaration declaration) {
+                return declaration.isConstructor();
             }
             return parent instanceof J.ClassDeclaration;
         }
@@ -308,7 +307,7 @@ public class FinalizePrivateFields extends Recipe {
         @Nullable
         static J.Identifier getLastIdentifier(J j) {
             List<J.Identifier> ids = new FindLastIdentifier().reduce(j, new ArrayList<>());
-            return !ids.isEmpty() ? ids.get(ids.size() - 1) : null;
+            return !ids.isEmpty() ? ids.getLast() : null;
         }
 
         @Override

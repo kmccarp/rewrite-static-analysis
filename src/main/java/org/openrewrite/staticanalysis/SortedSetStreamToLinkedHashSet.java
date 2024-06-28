@@ -57,7 +57,7 @@ public class SortedSetStreamToLinkedHashSet extends Recipe {
                 J.MethodInvocation mi = super.visitMethodInvocation(method, ctx);
                 if (STREAM_COLLECT_METHOD_MATCHER.matches(mi)
                     && STREAM_SORTED_METHOD_MATCHER.matches(mi.getSelect())
-                    && COLLECTORS_TO_SET_METHOD_MATCHER.matches(mi.getArguments().get(0))) {
+                    && COLLECTORS_TO_SET_METHOD_MATCHER.matches(mi.getArguments().getFirst())) {
                     maybeRemoveImport("java.util.stream.Collectors.toSet");
                     maybeAddImport("java.util.LinkedHashSet");
                     maybeAddImport("java.util.stream.Collectors");

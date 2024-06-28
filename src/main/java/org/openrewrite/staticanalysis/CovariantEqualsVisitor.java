@@ -48,9 +48,11 @@ public class CovariantEqualsVisitor<P> extends JavaIsoVisitor<P> {
     private static class ChangeCovariantEqualsMethodVisitor<P> extends JavaIsoVisitor<P> {
         private static final AnnotationMatcher OVERRIDE_ANNOTATION = new AnnotationMatcher("@java.lang.Override");
         private static final String EQUALS_BODY_PREFIX_TEMPLATE =
-                "if (#{} == this) return true;\n" +
-                "if (#{} == null || getClass() != #{}.getClass()) return false;\n" +
-                "#{} #{} = (#{}) #{};\n";
+                """
+                if (#{} == this) return true;
+                if (#{} == null || getClass() != #{}.getClass()) return false;
+                #{} #{} = (#{}) #{};
+                """;
 
         private final J.ClassDeclaration enclosingClass;
 
@@ -89,7 +91,7 @@ public class CovariantEqualsVisitor<P> extends JavaIsoVisitor<P> {
                  * This is because we prepend these type-checking replacement statements to the existing "equals(..)" body.
                  * Therefore we don't want to collide with any existing variable names.
                  */
-                J.VariableDeclarations.NamedVariable oldParamName = ((J.VariableDeclarations) m.getParameters().get(0)).getVariables().get(0);
+                J.VariableDeclarations.NamedVariable oldParamName = ((J.VariableDeclarations) m.getParameters().getFirst()).getVariables().getFirst();
                 String paramName = "obj".equals(oldParamName.getSimpleName()) ? "other" : "obj";
                 m = JavaTemplate.builder("Object #{}").build()
                         .apply(updateCursor(m),
@@ -115,7 +117,7 @@ public class CovariantEqualsVisitor<P> extends JavaIsoVisitor<P> {
                 };
 
                 m = equalsBodySnippet.apply(new Cursor(getCursor().getParent(), m),
-                        m.getBody().getStatements().get(0).getCoordinates().before(),
+                        m.getBody().getStatements().getFirst().getCoordinates().before(),
                         params);
             }
 

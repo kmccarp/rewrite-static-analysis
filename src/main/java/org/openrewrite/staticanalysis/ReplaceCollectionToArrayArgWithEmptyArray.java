@@ -38,17 +38,19 @@ public class ReplaceCollectionToArrayArgWithEmptyArray extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Changes new array creation with `Collection#toArray(T[])` to use an empty array argument, which is better for performance.\n" +
-                "\n" +
-                "According to the `Collection#toArray(T[])` documentation:\n" +
-                "\n" +
-                "> If the collection fits in the specified array, it is returned therein.\n" +
-                "\n" +
-                "However, although it's not intuitive, " +
-                "allocating a right-sized array ahead of time to pass to the API appears to be [generally worse for performance](https://shipilev.net/blog/2016/arrays-wisdom-ancients/#_conclusion) " +
-                "according to benchmarking and JVM developers due to a number of implementation details in both Java and the virtual machine.\n" +
-                "\n" +
-                "H2 achieved significant performance gains by [switching to empty arrays instead pre-sized ones](https://github.com/h2database/h2database/issues/311).";
+        return """
+                Changes new array creation with `Collection#toArray(T[])` to use an empty array argument, which is better for performance.
+                
+                According to the `Collection#toArray(T[])` documentation:
+                
+                > If the collection fits in the specified array, it is returned therein.
+                
+                However, although it's not intuitive, \
+                allocating a right-sized array ahead of time to pass to the API appears to be [generally worse for performance](https://shipilev.net/blog/2016/arrays-wisdom-ancients/#_conclusion) \
+                according to benchmarking and JVM developers due to a number of implementation details in both Java and the virtual machine.
+                
+                H2 achieved significant performance gains by [switching to empty arrays instead pre-sized ones](https://github.com/h2database/h2database/issues/311).\
+                """;
     }
 
     @Override

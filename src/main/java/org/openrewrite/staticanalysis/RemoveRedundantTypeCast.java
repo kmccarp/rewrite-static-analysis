@@ -69,10 +69,9 @@ public class RemoveRedundantTypeCast extends Recipe {
                 J parentValue = parent.getValue();
 
                 JavaType targetType = null;
-                if (parentValue instanceof J.VariableDeclarations) {
-                    targetType = ((J.VariableDeclarations) parentValue).getVariables().get(0).getType();
-                } else if (parentValue instanceof MethodCall) {
-                    MethodCall methodCall = (MethodCall) parentValue;
+                if (parentValue instanceof J.VariableDeclarations declarations) {
+                    targetType = declarations.getVariables().getFirst().getType();
+                } else if (parentValue instanceof MethodCall methodCall) {
                     JavaType.Method methodType = methodCall.getMethodType();
                     if (methodType == null || hasMethodOverloading(methodType)) {
                         return visited;
@@ -86,7 +85,7 @@ public class RemoveRedundantTypeCast extends Recipe {
                             }
                         }
                     }
-                } else if (parentValue instanceof J.Return && ((J.Return) parentValue).getExpression() == typeCast) {
+                } else if (parentValue instanceof J.Return return1 && return1.getExpression() == typeCast) {
                     parent = parent.dropParentUntil(is -> is instanceof J.Lambda ||
                                                           is instanceof J.MethodDeclaration ||
                                                           is instanceof J.ClassDeclaration ||
@@ -130,8 +129,8 @@ public class RemoveRedundantTypeCast extends Recipe {
                     return parameterTypes.get(arg);
                 }
                 // varargs?
-                JavaType type = parameterTypes.get(parameterTypes.size() - 1);
-                return type instanceof JavaType.Array ? ((JavaType.Array) type).getElemType() : type;
+                JavaType type = parameterTypes.getLast();
+                return type instanceof JavaType.Array a ? a.getElemType() : type;
             }
         };
     }

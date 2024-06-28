@@ -70,8 +70,7 @@ public class NeedBraces extends Recipe {
         private <T extends Statement> J.Block buildBlock(Statement owner, T element) {
             J j = getCursor().getParentTreeCursor().getValue();
             Space end = Space.EMPTY;
-            if (j instanceof J.Block) {
-                J.Block block = (J.Block) j;
+            if (j instanceof J.Block block) {
                 List<Statement> statements = block.getStatements();
                 int i = statements.indexOf(owner);
                 boolean last = i == statements.size() - 1;

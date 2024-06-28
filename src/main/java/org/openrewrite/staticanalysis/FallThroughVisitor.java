@@ -72,7 +72,7 @@ public class FallThroughVisitor<P> extends JavaIsoVisitor<P> {
         public J.Case visitCase(J.Case case_, P p) {
             if (scope.isScope(case_)) {
                 List<Statement> statements = case_.getStatements();
-                if (statements.size() == 1 && statements.get(0) instanceof J.Block) {
+                if (statements.size() == 1 && statements.getFirst() instanceof J.Block) {
                     return super.visitCase(case_, p);
                 }
                 J.Break breakToAdd = autoFormat(
@@ -90,7 +90,7 @@ public class FallThroughVisitor<P> extends JavaIsoVisitor<P> {
             J.Block b = block;
             if (getCursor().isScopeInPath(scope)) {
                 List<Statement> statements = b.getStatements();
-                if (statements.size() == 1 && statements.get(0) instanceof J.Block) {
+                if (statements.size() == 1 && statements.getFirst() instanceof J.Block) {
                     return super.visitBlock(b, p);
                 }
                 J.Break breakToAdd = autoFormat(
@@ -125,8 +125,8 @@ public class FallThroughVisitor<P> extends JavaIsoVisitor<P> {
 
         private static class FindLastLineBreaksOrFallsThroughCommentsVisitor extends JavaIsoVisitor<Set<J>> {
             private static final Predicate<Comment> HAS_RELIEF_PATTERN_COMMENT = comment ->
-                    comment instanceof TextComment &&
-                            RELIEF_PATTERN.matcher(((TextComment) comment).getText()).find();
+                    comment instanceof TextComment tc &&
+                            RELIEF_PATTERN.matcher(tc.getText()).find();
             private final J.Case scope;
 
             public FindLastLineBreaksOrFallsThroughCommentsVisitor(J.Case scope) {
@@ -138,21 +138,19 @@ public class FallThroughVisitor<P> extends JavaIsoVisitor<P> {
                         .reduce((s1, s2) -> s2) // last statement
                         .map(s -> breaks(s) || // https://github.com/openrewrite/rewrite-static-analysis/issues/173
                                 s.getComments().stream().anyMatch(HAS_RELIEF_PATTERN_COMMENT) ||
-                                s instanceof J.Block && ((J.Block) s).getEnd().getComments().stream().anyMatch(HAS_RELIEF_PATTERN_COMMENT)
+                                s instanceof J.Block b && b.getEnd().getComments().stream().anyMatch(HAS_RELIEF_PATTERN_COMMENT)
                         ).orElse(false);
             }
 
             private static boolean breaks(Statement s) {
-                if (s instanceof J.Block) {
-                    List<Statement> statements = ((J.Block) s).getStatements();
-                    return !statements.isEmpty() && breaks(statements.get(statements.size() - 1));
-                } else if (s instanceof J.If) {
-                    J.If iff = (J.If) s;
+                if (s instanceof J.Block block) {
+                    List<Statement> statements = block.getStatements();
+                    return !statements.isEmpty() && breaks(statements.getLast());
+                } else if (s instanceof J.If iff) {
                     return iff.getElsePart() != null && breaks(iff.getThenPart()) && breaks(iff.getThenPart());
-                } else if (s instanceof J.Label) {
-                    return breaks(((J.Label) s).getStatement());
-                } else if (s instanceof J.Try) {
-                    J.Try try_ = (J.Try) s;
+                } else if (s instanceof J.Label label) {
+                    return breaks(label.getStatement());
+                } else if (s instanceof J.Try try_) {
                     if (try_.getFinally() != null && breaks(try_.getFinally())) {
                         return true;
                     }

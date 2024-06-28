@@ -58,8 +58,10 @@ public class RemoveToStringCallsFromArrayInstances extends Recipe {
 
     @Override
     public String getDescription() {
-        return "The result from `toString()` calls on arrays is largely useless. The output does not actually reflect" +
-               " the contents of the array. `Arrays.toString(array)` should be used instead as it gives the contents of the array.";
+        return """
+               The result from `toString()` calls on arrays is largely useless. The output does not actually reflect\
+                the contents of the array. `Arrays.toString(array)` should be used instead as it gives the contents of the array.\
+               """;
     }
 
     @Override
@@ -96,7 +98,7 @@ public class RemoveToStringCallsFromArrayInstances extends Recipe {
                 }
             } else if (OBJECTS_TOSTRING_MATCHER.matches(mi) || VALUEOF_MATCHER.matches(mi)) {
                 // method is static
-                Expression select = mi.getArguments().get(0);
+                Expression select = mi.getArguments().getFirst();
                 maybeRemoveImport("java.util.Objects");
 
                 return buildReplacement(select, mi);

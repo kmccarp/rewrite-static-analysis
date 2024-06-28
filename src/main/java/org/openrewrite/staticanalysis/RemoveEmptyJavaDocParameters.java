@@ -58,8 +58,7 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                 J.MethodDeclaration md = super.visitMethodDeclaration(method, ctx);
                 if (md.getComments().stream().anyMatch(Javadoc.DocComment.class::isInstance)) {
                     md = md.withComments(ListUtils.map(md.getComments(), it -> {
-                        if (it instanceof Javadoc.DocComment) {
-                            Javadoc.DocComment docComment = (Javadoc.DocComment) it;
+                        if (it instanceof Javadoc.DocComment docComment) {
                             return (Comment) removeEmptyParamVisitor.visitDocComment(docComment, ctx);
                         }
                         return it;
@@ -81,7 +80,7 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                     List<Javadoc> body = new ArrayList<>(javadoc.getBody());
                     // We add a trailing element, to fix elements on the first line without space
                     // We can use null since this element is never going to be read, and nulls get filtered later on.
-                    body.add(0, null);
+                    body.addFirst(null);
 
                     for (int i = 0; i < body.size(); i++) {
                         // JavaDocs require a look ahead, because the current element may be an element that exists on the same line as a parameter.
@@ -90,18 +89,17 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                         Javadoc currentDoc = body.get(i);
                         if (i + 1 < body.size()) {
                             Javadoc nextDoc = body.get(i + 1);
-                            if (nextDoc instanceof Javadoc.Parameter) {
-                                Javadoc.Parameter nextParameter = (Javadoc.Parameter) nextDoc;
+                            if (nextDoc instanceof Javadoc.Parameter nextParameter) {
                                 if (isEmptyParameter(nextParameter)) {
                                     // The `@param` being removed is the last item in the JavaDoc body, and contains
                                     // relevant whitespace via the JavaDoc.LineBreak.
                                     if (i + 1 == body.size() - 1) {
                                         // If we have a previous LineBreak we need to remove it before adding the new one
-                                        if (!newBody.isEmpty() && newBody.get(newBody.size() - 1) instanceof Javadoc.LineBreak) {
-                                            newBody.remove(newBody.size() - 1);
+                                        if (!newBody.isEmpty() && newBody.getLast() instanceof Javadoc.LineBreak) {
+                                            newBody.removeLast();
                                         }
                                         if (!nextParameter.getDescription().isEmpty()) {
-                                            newBody.add(nextParameter.getDescription().get(0));
+                                            newBody.add(nextParameter.getDescription().getFirst());
                                         }
                                     }
 
@@ -111,18 +109,17 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                                     useNewBody = true;
                                     currentDoc = null;
                                 }
-                            } else if (nextDoc instanceof Javadoc.Return) {
-                                Javadoc.Return nextReturn = (Javadoc.Return) nextDoc;
+                            } else if (nextDoc instanceof Javadoc.Return nextReturn) {
                                 if (isEmptyReturn(nextReturn)) {
                                     // The `@return` being removed is the last item in the JavaDoc body, and contains
                                     // relevant whitespace via the JavaDoc.LineBreak.
                                     if (i + 1 == body.size() - 1) {
                                         // If we have a previous LineBreak we need to remove it before adding the new one
-                                        if (!newBody.isEmpty() && newBody.get(newBody.size() - 1) instanceof Javadoc.LineBreak) {
-                                            newBody.remove(newBody.size() - 1);
+                                        if (!newBody.isEmpty() && newBody.getLast() instanceof Javadoc.LineBreak) {
+                                            newBody.removeLast();
                                         }
                                         if (!nextReturn.getDescription().isEmpty()) {
-                                            newBody.add(nextReturn.getDescription().get(0));
+                                            newBody.add(nextReturn.getDescription().getFirst());
                                         }
                                     }
 
@@ -132,11 +129,10 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                                     useNewBody = true;
                                     currentDoc = null;
                                 }
-                            } else if (nextDoc instanceof Javadoc.Erroneous) {
-                                Javadoc.Erroneous nextErroneous = (Javadoc.Erroneous) nextDoc;
+                            } else if (nextDoc instanceof Javadoc.Erroneous nextErroneous) {
                                 if (isEmptyErroneous(nextErroneous)) {
-                                    if (!newBody.isEmpty() && newBody.get(newBody.size() - 1) instanceof Javadoc.LineBreak) {
-                                        newBody.remove(newBody.size() - 1);
+                                    if (!newBody.isEmpty() && newBody.getLast() instanceof Javadoc.LineBreak) {
+                                        newBody.removeLast();
                                     }
 
                                     // No need to reprocess the next element.
@@ -171,20 +167,20 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                     Javadoc currentDoc;
                     Javadoc.LineBreak firstLineBreak = null;
                     while (!body.isEmpty()) {
-                        currentDoc = body.get(body.size() - 1);
+                        currentDoc = body.getLast();
                         boolean isLineBreak = currentDoc instanceof Javadoc.LineBreak;
                         if (isLineBreak && firstLineBreak == null) {
                             firstLineBreak = (Javadoc.LineBreak) currentDoc;
                         }
                         boolean isEmptyText = false;
-                        if (currentDoc instanceof Javadoc.Text) {
-                            String currentText = ((Javadoc.Text) currentDoc).getText().trim();
+                        if (currentDoc instanceof Javadoc.Text text) {
+                            String currentText = text.getText().trim();
                             isEmptyText = currentText.isEmpty();
                         }
                         if (!isLineBreak && !isEmptyText) {
                             break;
                         }
-                        body.remove(body.size() - 1);
+                        body.removeLast();
                     }
                     if (!body.isEmpty() && firstLineBreak != null) {
                         // ensure proper "ending" of JavaDoc including OS-specific newlines
@@ -207,8 +203,8 @@ public class RemoveEmptyJavaDocParameters extends Recipe {
                 public boolean isEmptyErroneous(Javadoc.Erroneous erroneous) {
                     // Empty throws result in an Erroneous type.
                     return erroneous.getText().size() == 1 &&
-                           erroneous.getText().get(0) instanceof Javadoc.Text &&
-                           "@throws".equals(((Javadoc.Text) erroneous.getText().get(0)).getText());
+                           erroneous.getText().getFirst() instanceof Javadoc.Text &&
+                           "@throws".equals(((Javadoc.Text) erroneous.getText().getFirst()).getText());
                 }
             }
         };

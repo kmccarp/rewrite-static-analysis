@@ -67,19 +67,17 @@ public class InlineVariable extends Recipe {
                     if (identReturned != null) {
                         if (statements.get(statements.size() - 2) instanceof J.VariableDeclarations) {
                             J.VariableDeclarations varDec = (J.VariableDeclarations) statements.get(statements.size() - 2);
-                            J.VariableDeclarations.NamedVariable identDefinition = varDec.getVariables().get(0);
+                            J.VariableDeclarations.NamedVariable identDefinition = varDec.getVariables().getFirst();
                             if (varDec.getLeadingAnnotations().isEmpty() && identDefinition.getSimpleName().equals(identReturned)) {
                                 bl = bl.withStatements(ListUtils.map(statements, (i, statement) -> {
                                     if (i == statements.size() - 2) {
                                         return null;
                                     } else if (i == statements.size() - 1) {
-                                        if (statement instanceof J.Return) {
-                                            J.Return return_ = (J.Return) statement;
+                                        if (statement instanceof J.Return return_) {
                                             return return_.withExpression(requireNonNull(identDefinition.getInitializer())
                                                             .withPrefix(requireNonNull(return_.getExpression()).getPrefix()))
                                                     .withPrefix(varDec.getPrefix().withComments(ListUtils.concatAll(varDec.getComments(), return_.getComments())));
-                                        } else if (statement instanceof J.Throw) {
-                                            J.Throw thrown = (J.Throw) statement;
+                                        } else if (statement instanceof J.Throw thrown) {
                                             return thrown.withException(requireNonNull(identDefinition.getInitializer())
                                                             .withPrefix(requireNonNull(thrown.getException()).getPrefix()))
                                                     .withPrefix(varDec.getPrefix().withComments(ListUtils.concatAll(varDec.getComments(), thrown.getComments())));
@@ -96,16 +94,14 @@ public class InlineVariable extends Recipe {
 
             @Nullable
             private String identReturned(List<Statement> stats) {
-                Statement lastStatement = stats.get(stats.size() - 1);
-                if (lastStatement instanceof J.Return) {
-                    J.Return return_ = (J.Return) lastStatement;
+                Statement lastStatement = stats.getLast();
+                if (lastStatement instanceof J.Return return_) {
                     Expression expression = return_.getExpression();
-                    if (expression instanceof J.Identifier &&
+                    if (expression instanceof J.Identifier identifier &&
                         !(expression.getType() instanceof JavaType.Array)) {
-                        return ((J.Identifier) expression).getSimpleName();
+                        return identifier.getSimpleName();
                     }
-                } else if (lastStatement instanceof J.Throw) {
-                    J.Throw thr = (J.Throw) lastStatement;
+                } else if (lastStatement instanceof J.Throw thr) {
                     if (thr.getException() instanceof J.Identifier) {
                         return ((J.Identifier) thr.getException()).getSimpleName();
                     }

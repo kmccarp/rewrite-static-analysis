@@ -51,8 +51,10 @@ public class UseStringReplace extends Recipe {
 
     @Override
     public String getDescription() {
-        return "When `String::replaceAll` is used, the first argument should be a real regular expression. " +
-                "If it’s not the case, `String::replace` does exactly the same thing as `String::replaceAll` without the performance drawback of the regex.";
+        return """
+                When `String::replaceAll` is used, the first argument should be a real regular expression. \
+                If it’s not the case, `String::replace` does exactly the same thing as `String::replaceAll` without the performance drawback of the regex.\
+                """;
     }
 
     @Override
@@ -83,7 +85,7 @@ public class UseStringReplace extends Recipe {
 
             //Checks if method invocation matches with String#replaceAll
             if (REPLACE_ALL.matches(invocation)) {
-                Expression firstArgument = invocation.getArguments().get(0);
+                Expression firstArgument = invocation.getArguments().getFirst();
 
                 //Checks if the first argument is a String literal
                 if (isStringLiteral(firstArgument)) {
@@ -98,7 +100,7 @@ public class UseStringReplace extends Recipe {
                                 .withName(invocation.getName().withSimpleName("replace"))
                                 .withArguments(ListUtils.mapFirst(invocation.getArguments(), arg -> ((J.Literal) arg)
                                         .withValue(unEscapedLiteral)
-                                        .withValueSource(String.format("\"%s\"", StringEscapeUtils.escapeJava(unEscapedLiteral)))));
+                                        .withValueSource("\"%s\"".formatted(StringEscapeUtils.escapeJava(unEscapedLiteral)))));
                     }
                 }
             }
@@ -107,7 +109,7 @@ public class UseStringReplace extends Recipe {
         }
 
         private boolean isStringLiteral(Expression expression) {
-            return expression instanceof J.Literal && TypeUtils.isString(((J.Literal) expression).getType());
+            return expression instanceof J.Literal l && TypeUtils.isString(l.getType());
         }
 
         private boolean mayBeRegExp(String argument) {

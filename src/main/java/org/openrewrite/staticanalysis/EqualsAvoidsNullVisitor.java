@@ -47,11 +47,10 @@ public class EqualsAvoidsNullVisitor<P> extends JavaIsoVisitor<P> {
         }
 
         if ((STRING_EQUALS.matches(m) || (!Boolean.TRUE.equals(style.getIgnoreEqualsIgnoreCase()) && STRING_EQUALS_IGNORE_CASE.matches(m))) &&
-                m.getArguments().get(0) instanceof J.Literal &&
+                m.getArguments().getFirst() instanceof J.Literal &&
                 !(m.getSelect() instanceof J.Literal)) {
             Tree parent = getCursor().getParentTreeCursor().getValue();
-            if (parent instanceof J.Binary) {
-                J.Binary binary = (J.Binary) parent;
+            if (parent instanceof J.Binary binary) {
                 if (binary.getOperator() == J.Binary.Type.And && binary.getLeft() instanceof J.Binary) {
                     J.Binary potentialNullCheck = (J.Binary) binary.getLeft();
                     if ((isNullLiteral(potentialNullCheck.getLeft()) && matchesSelect(potentialNullCheck.getRight(), m.getSelect())) ||
@@ -61,7 +60,7 @@ public class EqualsAvoidsNullVisitor<P> extends JavaIsoVisitor<P> {
                 }
             }
 
-            m = m.withSelect(((J.Literal) m.getArguments().get(0)).withPrefix(m.getSelect().getPrefix()))
+            m = m.withSelect(((J.Literal) m.getArguments().getFirst()).withPrefix(m.getSelect().getPrefix()))
                     .withArguments(singletonList(m.getSelect().withPrefix(Space.EMPTY)));
         }
 
@@ -69,7 +68,7 @@ public class EqualsAvoidsNullVisitor<P> extends JavaIsoVisitor<P> {
     }
 
     private boolean isNullLiteral(Expression expression) {
-        return expression instanceof J.Literal && ((J.Literal) expression).getType() == JavaType.Primitive.Null;
+        return expression instanceof J.Literal l && l.getType() == JavaType.Primitive.Null;
     }
 
     private boolean matchesSelect(Expression expression, Expression select) {

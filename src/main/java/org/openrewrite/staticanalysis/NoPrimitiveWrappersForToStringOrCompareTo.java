@@ -125,8 +125,8 @@ public class NoPrimitiveWrappersForToStringOrCompareTo extends Recipe {
 
         @Nullable
         private Expression getSingleArg(@Nullable List<Expression> args) {
-            if (args != null && args.size() == 1 && !(args.get(0) instanceof J.Empty)) {
-                return args.get(0);
+            if (args != null && args.size() == 1 && !(args.getFirst() instanceof J.Empty)) {
+                return args.getFirst();
             }
             return null;
         }

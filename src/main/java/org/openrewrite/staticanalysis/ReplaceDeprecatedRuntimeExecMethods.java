@@ -40,8 +40,10 @@ public class ReplaceDeprecatedRuntimeExecMethods extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Replace `Runtime#exec(String)` methods to use `exec(String[])` instead because the former is deprecated " +
-               "after Java 18 and is no longer recommended for use by the Java documentation.";
+        return """
+               Replace `Runtime#exec(String)` methods to use `exec(String[])` instead because the former is deprecated \
+               after Java 18 and is no longer recommended for use by the Java documentation.\
+               """;
     }
 
     @Override
@@ -57,15 +59,15 @@ public class ReplaceDeprecatedRuntimeExecMethods extends Recipe {
                 J.MethodInvocation m = super.visitMethodInvocation(method, ctx);
 
                 if (RUNTIME_EXEC_CMD.matches(m) || RUNTIME_EXEC_CMD_ENVP.matches(m) || RUNTIME_EXEC_CMD_ENVP_FILE.matches(m)) {
-                    Expression command = m.getArguments().get(0);
+                    Expression command = m.getArguments().getFirst();
                     List<Expression> commands = new ArrayList<>();
                     boolean flattenAble = ChainStringBuilderAppendCalls.flatAdditiveExpressions(command, commands);
 
                     StringBuilder sb = new StringBuilder();
                     if (flattenAble) {
                         for (Expression e : commands) {
-                            if (e instanceof J.Literal && ((J.Literal) e).getType() == JavaType.Primitive.String) {
-                                sb.append(((J.Literal) e).getValue());
+                            if (e instanceof J.Literal literal && literal.getType() == JavaType.Primitive.String) {
+                                sb.append(literal.getValue());
                             } else {
                                 flattenAble = false;
                                 break;
@@ -76,12 +78,12 @@ public class ReplaceDeprecatedRuntimeExecMethods extends Recipe {
                     updateCursor(m);
                     if (flattenAble) {
                         String[] cmds = sb.toString().split(" ");
-                        String templateCode = String.format("new String[] {%s}", toStringArguments(cmds));
+                        String templateCode = "new String[] {%s}".formatted(toStringArguments(cmds));
                         JavaTemplate template = JavaTemplate.builder(templateCode).build();
 
                         List<Expression> args = m.getArguments();
-                        Cursor cursor = new Cursor(getCursor(), args.get(0));
-                        args.set(0, template.apply(cursor, args.get(0).getCoordinates().replace()));
+                        Cursor cursor = new Cursor(getCursor(), args.getFirst());
+                        args.set(0, template.apply(cursor, args.getFirst().getCoordinates().replace()));
 
                         if (m.getMethodType() != null) {
                             List<JavaType> parameterTypes = m.getMethodType().getParameterTypes();
@@ -94,7 +96,7 @@ public class ReplaceDeprecatedRuntimeExecMethods extends Recipe {
                         // replace argument to 'command.split(" ")'
                         List<Expression> args = m.getArguments();
                         boolean needWrap = false;
-                        Expression arg0 = args.get(0);
+                        Expression arg0 = args.getFirst();
                         if (!(arg0 instanceof J.Identifier) &&
                             !(arg0 instanceof J.Literal) &&
                             !(arg0 instanceof J.MethodInvocation)) {
@@ -103,8 +105,8 @@ public class ReplaceDeprecatedRuntimeExecMethods extends Recipe {
 
                         String code = needWrap ? "(#{any()}).split(\" \")" : "#{any()}.split(\" \")";
                         JavaTemplate template = JavaTemplate.builder(code).contextSensitive().build();
-                        Cursor cursor = new Cursor(getCursor(), args.get(0));
-                        arg0 = template.apply(cursor, args.get(0).getCoordinates().replace(), args.get(0));
+                        Cursor cursor = new Cursor(getCursor(), args.getFirst());
+                        arg0 = template.apply(cursor, args.getFirst().getCoordinates().replace(), args.getFirst());
                         args.set(0, arg0);
 
                         if (m.getMethodType() != null) {

@@ -74,7 +74,7 @@ public class UseDiamondOperator extends Recipe {
             final TypedTree varDeclsTypeExpression = varDecls.getTypeExpression();
             if (varDeclsTypeExpression != null &&
                 varDecls.getVariables().size() == 1 &&
-                varDecls.getVariables().get(0).getInitializer() != null &&
+                varDecls.getVariables().getFirst().getInitializer() != null &&
                 varDecls.getTypeExpression() instanceof J.ParameterizedType) {
                 varDecls = varDecls.withVariables(ListUtils.map(varDecls.getVariables(), nv -> {
                     if (nv.getInitializer() instanceof J.NewClass) {
@@ -114,7 +114,7 @@ public class UseDiamondOperator extends Recipe {
 
 
                 Optional<JavaType.Method> declaredMethodType = findDeclaredMethod(methodType.getDeclaringType(), methodType.getName(), methodType.getParameterTypes());
-                if (!declaredMethodType.isPresent()) {
+                if (declaredMethodType.isEmpty()) {
                     // If we cannot find the method in the declaringType is because its parameter types doesn't match
                     // due to generic type parameters being inferred on the invocation. We cannot safely apply the
                     // diamond operator on an argument of this method, because we cannot guarantee type inference.
@@ -122,13 +122,13 @@ public class UseDiamondOperator extends Recipe {
                 }
 
                 mi = mi.withArguments(ListUtils.map(mi.getArguments(), (i, arg) -> {
-                    if (arg instanceof J.NewClass) {
+                    if (arg instanceof J.NewClass nc) {
                         boolean isGenericType = false;
                         boolean isVarArg = methodType.getParameterTypes().size() == 1 &&
-                                methodType.getParameterTypes().get(0) instanceof JavaType.Array;
+                                methodType.getParameterTypes().getFirst() instanceof JavaType.Array;
 
                         if (isVarArg) {
-                            isGenericType = isGenericType(((JavaType.Array) methodType.getParameterTypes().get(0)).getElemType());
+                            isGenericType = isGenericType(((JavaType.Array) methodType.getParameterTypes().getFirst()).getElemType());
                         } else if (i < methodType.getParameterTypes().size()) {
                             JavaType parameterType = methodType.getParameterTypes().get(i);
                             isGenericType = isGenericType(parameterType);
@@ -137,8 +137,6 @@ public class UseDiamondOperator extends Recipe {
                         if (isGenericType) {
                             return arg;
                         }
-
-                        J.NewClass nc = (J.NewClass) arg;
                         if ((java9 || nc.getBody() == null) && !methodType.getParameterTypes().isEmpty()) {
                             JavaType.Parameterized paramType = TypeUtils.asParameterized(getMethodParamType(methodType, i));
                             if (paramType != null && nc.getClazz() instanceof J.ParameterizedType) {
@@ -187,8 +185,7 @@ public class UseDiamondOperator extends Recipe {
             J.NewClass nc = return_.getExpression() instanceof J.NewClass ? (J.NewClass) return_.getExpression() : null;
             if (nc != null && (java9 || nc.getBody() == null) && nc.getClazz() instanceof J.ParameterizedType) {
                 J parentBlock = getCursor().dropParentUntil(v -> v instanceof J.MethodDeclaration || v instanceof J.Lambda).getValue();
-                if (parentBlock instanceof J.MethodDeclaration) {
-                    J.MethodDeclaration md = (J.MethodDeclaration) parentBlock;
+                if (parentBlock instanceof J.MethodDeclaration md) {
                     if (md.getReturnTypeExpression() instanceof J.ParameterizedType) {
                         return_ = return_.withExpression(
                                 maybeRemoveParams(parameterizedTypes((J.ParameterizedType) md.getReturnTypeExpression()), nc));
@@ -234,8 +231,7 @@ public class UseDiamondOperator extends Recipe {
         }
 
         private static boolean hasAnnotations(J type) {
-            if (type instanceof J.ParameterizedType) {
-                J.ParameterizedType parameterizedType = (J.ParameterizedType) type;
+            if (type instanceof J.ParameterizedType parameterizedType) {
                 if (hasAnnotations(parameterizedType.getClazz())) {
                     return true;
                 } else if (parameterizedType.getTypeParameters() != null) {

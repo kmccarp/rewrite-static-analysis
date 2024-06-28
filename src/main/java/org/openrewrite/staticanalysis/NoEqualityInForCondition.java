@@ -58,8 +58,8 @@ public class NoEqualityInForCondition extends Recipe {
                         return super.visitForControl(control, ctx);
                     }
 
-                    if (control.getUpdate().size() == 1 && control.getUpdate().get(0) instanceof J.Unary) {
-                        J.Unary update = (J.Unary) control.getUpdate().get(0);
+                    if (control.getUpdate().size() == 1 && control.getUpdate().getFirst() instanceof J.Unary) {
+                        J.Unary update = (J.Unary) control.getUpdate().getFirst();
 
                         if (condition.getOperator() == J.Binary.Type.NotEqual) {
                             switch (update.getOperator()) {

@@ -63,7 +63,7 @@ public class ChainStringBuilderAppendCalls extends Recipe {
                     }
 
                     List<Expression> flattenExpressions = new ArrayList<>();
-                    boolean flattenable = flatAdditiveExpressions(arguments.get(0).unwrap(), flattenExpressions);
+                    boolean flattenable = flatAdditiveExpressions(arguments.getFirst().unwrap(), flattenExpressions);
                     if (!flattenable) {
                         return m;
                     }
@@ -78,8 +78,8 @@ public class ChainStringBuilderAppendCalls extends Recipe {
                     boolean appendToString = false;
                     for (Expression exp : flattenExpressions) {
                         if (appendToString) {
-                            if (exp instanceof J.Literal
-                                && (((J.Literal) exp).getType() == JavaType.Primitive.String)
+                            if (exp instanceof J.Literal literal
+                                && (literal.getType() == JavaType.Primitive.String)
                             ) {
                                 group.add(exp);
                             } else {
@@ -87,8 +87,8 @@ public class ChainStringBuilderAppendCalls extends Recipe {
                                 groups.add(exp);
                             }
                         } else {
-                            if (exp instanceof J.Literal
-                                && (((J.Literal) exp).getType() == JavaType.Primitive.String)) {
+                            if (exp instanceof J.Literal literal
+                                && (literal.getType() == JavaType.Primitive.String)) {
                                 addToGroups(group, groups);
                                 appendToString = true;
                             } else if ((exp instanceof J.Identifier || exp instanceof J.MethodInvocation) && exp.getType() != null) {
@@ -104,7 +104,7 @@ public class ChainStringBuilderAppendCalls extends Recipe {
                     }
                     addToGroups(group, groups);
 
-                    J.MethodInvocation chainedMethods = m.withArguments(singletonList(groups.get(0)));
+                    J.MethodInvocation chainedMethods = m.withArguments(singletonList(groups.getFirst()));
                     for (int i = 1; i < groups.size(); i++) {
                         chainedMethods = chainedMethods.withSelect(chainedMethods)
                                 .withArguments(singletonList(groups.get(i).unwrap()))
@@ -157,10 +157,10 @@ public class ChainStringBuilderAppendCalls extends Recipe {
                     .map(J.CompilationUnit.class::cast)
                     .findFirst()
                     .get();
-            additiveBinaryTemplate = (J.Binary) ((J.VariableDeclarations) cu.getClasses().get(0)
+            additiveBinaryTemplate = (J.Binary) ((J.VariableDeclarations) cu.getClasses().getFirst()
                     .getBody()
-                    .getStatements().get(0))
-                    .getVariables().get(0)
+                    .getStatements().getFirst())
+                    .getVariables().getFirst()
                     .getInitializer();
             assert additiveBinaryTemplate != null;
         }
@@ -178,8 +178,7 @@ public class ChainStringBuilderAppendCalls extends Recipe {
     }
 
     public static boolean flatAdditiveExpressions(Expression expression, List<Expression> expressionList) {
-        if (expression instanceof J.Binary) {
-            J.Binary b = (J.Binary) expression;
+        if (expression instanceof J.Binary b) {
             if (b.getOperator() != J.Binary.Type.Addition) {
                 return false;
             }

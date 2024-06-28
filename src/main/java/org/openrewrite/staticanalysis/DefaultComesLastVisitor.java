@@ -61,10 +61,10 @@ public class DefaultComesLastVisitor<P> extends JavaIsoVisitor<P> {
             for (int i = defaultCaseIndex - 1; i >= 0; i--) {
                 J.Case aCase = cases.get(i);
                 if (aCase.getStatements().isEmpty() && !foundNonEmptyCase) {
-                    casesGroupedWithDefault.add(0, aCase);
+                    casesGroupedWithDefault.addFirst(aCase);
                 } else {
                     foundNonEmptyCase = true;
-                    fixedCases.add(0, aCase);
+                    fixedCases.addFirst(aCase);
                 }
             }
 
@@ -86,7 +86,7 @@ public class DefaultComesLastVisitor<P> extends JavaIsoVisitor<P> {
             }
 
             if (defaultCase != null && !casesGroupedWithDefault.isEmpty()) {
-                J.Case lastGroupedWithDefault = casesGroupedWithDefault.get(casesGroupedWithDefault.size() - 1);
+                J.Case lastGroupedWithDefault = casesGroupedWithDefault.getLast();
                 if (!lastGroupedWithDefault.getStatements().isEmpty()) {
                     casesGroupedWithDefault.set(casesGroupedWithDefault.size() - 1,
                             lastGroupedWithDefault.withStatements(Collections.emptyList()));
@@ -94,7 +94,7 @@ public class DefaultComesLastVisitor<P> extends JavaIsoVisitor<P> {
                 }
             }
 
-            J.Case lastNotGroupedWithDefault = fixedCases.get(fixedCases.size() - 1);
+            J.Case lastNotGroupedWithDefault = fixedCases.getLast();
             if (!lastNotGroupedWithDefault.getStatements().stream().reduce((s1, s2) -> s2)
                     .map(stat -> stat instanceof J.Break || stat instanceof J.Continue ||
                                  stat instanceof J.Return || stat instanceof J.Throw)
@@ -120,7 +120,7 @@ public class DefaultComesLastVisitor<P> extends JavaIsoVisitor<P> {
                         .map(stat -> stat instanceof J.Break || stat instanceof J.Continue || isVoidReturn(stat))
                         .orElse(false)) {
                     List<Statement> fixedDefaultStatements = new ArrayList<>(defaultCase.getStatements());
-                    fixedDefaultStatements.remove(fixedDefaultStatements.size() - 1);
+                    fixedDefaultStatements.removeLast();
                     fixedCases.add(defaultCase.withStatements(fixedDefaultStatements));
                 } else {
                     fixedCases.add(defaultCase);
@@ -147,7 +147,7 @@ public class DefaultComesLastVisitor<P> extends JavaIsoVisitor<P> {
     }
 
     private boolean isVoidReturn(Statement stat) {
-        return stat instanceof J.Return && ((J.Return) stat).getExpression() == null;
+        return stat instanceof J.Return r && r.getExpression() == null;
     }
 
     private boolean isDefaultCaseLastOrNotPresent(J.Switch switch_) {
@@ -182,7 +182,7 @@ public class DefaultComesLastVisitor<P> extends JavaIsoVisitor<P> {
 
     private boolean isDefaultCase(J.Case case_) {
         Expression elem = case_.getPattern();
-        return elem instanceof J.Identifier && ((J.Identifier) elem).getSimpleName().equals("default");
+        return elem instanceof J.Identifier i && i.getSimpleName().equals("default");
     }
 
 }

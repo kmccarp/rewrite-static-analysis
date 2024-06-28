@@ -31,7 +31,7 @@ class RemoveUnreachableCodeVisitor extends JavaVisitor<ExecutionContext> {
 
     List<Statement> statements = block.getStatements();
     Optional<Integer> maybeFirstJumpIndex = findFirstJump(statements);
-    if (!maybeFirstJumpIndex.isPresent()) {
+    if (maybeFirstJumpIndex.isEmpty()) {
       return block;
     }
     int firstJumpIndex = maybeFirstJumpIndex.get();

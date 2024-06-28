@@ -45,7 +45,7 @@ public class UseForEachRemoveInsteadOfSetRemoveAll extends Recipe {
                 if (removeAll.matches(mi) && !returnValueIsUsed()) {
                     mi = JavaTemplate.builder("#{any(java.util.Collection)}.forEach(#{any(java.util.Set)}::remove)")
                             .build()
-                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getSelect());
+                            .apply(updateCursor(mi), mi.getCoordinates().replace(), mi.getArguments().getFirst(), mi.getSelect());
                 }
                 return mi;
             }

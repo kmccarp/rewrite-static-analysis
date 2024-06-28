@@ -51,12 +51,12 @@ public class UseListSort extends Recipe {
                         return JavaTemplate.builder("#{any(java.util.List)}.sort(null)")
                                 .imports("java.util.List")
                                 .build()
-                                .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0));
+                                .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().getFirst());
                     } else {
                         return JavaTemplate.builder("#{any(java.util.List)}.sort(#{any(java.util.Comparator)})")
                                 .imports("java.util.List", "java.util.Comparator")
                                 .build()
-                                .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().get(0), mi.getArguments().get(1));
+                                .apply(getCursor(), mi.getCoordinates().replace(), mi.getArguments().getFirst(), mi.getArguments().get(1));
                     }
                 }
                 return mi;

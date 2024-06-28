@@ -79,8 +79,8 @@ public class FixStringFormatExpressions extends Recipe {
             if (sFormatMatcher.matches(mi) || sFormattedMatcher.matches(mi)) {
                 boolean isStringFormattedExpression = false;
                 J.Literal fmtArg = null;
-                if (sFormatMatcher.matches(mi) && mi.getArguments().get(0) instanceof J.Literal) {
-                    fmtArg = (J.Literal) mi.getArguments().get(0);
+                if (sFormatMatcher.matches(mi) && mi.getArguments().getFirst() instanceof J.Literal) {
+                    fmtArg = (J.Literal) mi.getArguments().getFirst();
                 } else if (sFormattedMatcher.matches(mi) && mi.getSelect() instanceof J.Literal) {
                     fmtArg = (J.Literal) mi.getSelect();
                     isStringFormattedExpression = true;
@@ -120,8 +120,7 @@ public class FixStringFormatExpressions extends Recipe {
         }
 
         private static Expression replaceNewLineChars(Expression arg0) {
-            if (arg0 instanceof J.Literal) {
-                J.Literal fmt = (J.Literal) arg0;
+            if (arg0 instanceof J.Literal fmt) {
                 if (fmt.getValue() != null) {
                     fmt = fmt.withValue(fmt.getValue().toString().replaceAll("(?<!\\\\)\n", "%n"));
                 }

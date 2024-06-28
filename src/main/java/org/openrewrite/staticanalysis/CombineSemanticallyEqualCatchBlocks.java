@@ -39,8 +39,10 @@ public class CombineSemanticallyEqualCatchBlocks extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Combine catches in a try that contain semantically equivalent blocks. " +
-                "No change will be made when a caught exception exists if combing catches may change application behavior or type attribution is missing.";
+        return """
+                Combine catches in a try that contain semantically equivalent blocks. \
+                No change will be made when a caught exception exists if combing catches may change application behavior or type attribution is missing.\
+                """;
     }
 
     @Override
@@ -257,7 +259,7 @@ public class CombineSemanticallyEqualCatchBlocks extends Recipe {
                                 JRightPadded<NameTree> alternative = alternatives.get(i);
                                 alternative = alternative.withElement(alternative.getElement().withPrefix(Space.EMPTY));
                                 // Preserve the order of the original catches.
-                                combinedCatches.add(0, alternative);
+                                combinedCatches.addFirst(alternative);
                             }
                         }
                     }
@@ -267,7 +269,7 @@ public class CombineSemanticallyEqualCatchBlocks extends Recipe {
                         identifier = identifier.withPrefix(Space.EMPTY);
                         JRightPadded<NameTree> newCatch = JRightPadded.build(identifier);
                         // Preserve the order of the original catches.
-                        combinedCatches.add(0, newCatch);
+                        combinedCatches.addFirst(newCatch);
                     }
                 }
                 return combinedCatches;

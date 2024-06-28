@@ -43,9 +43,11 @@ public class UseLambdaForFunctionalInterface extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Instead of anonymous class declarations, use a lambda where possible. Using lambdas to replace " +
-               "anonymous classes can lead to more expressive and maintainable code, improve code readability, reduce " +
-               "code duplication, and achieve better performance in some cases.";
+        return """
+               Instead of anonymous class declarations, use a lambda where possible. Using lambdas to replace \
+               anonymous classes can lead to more expressive and maintainable code, improve code readability, reduce \
+               code duplication, and achieve better performance in some cases.\
+               """;
     }
 
     @Override
@@ -67,7 +69,7 @@ public class UseLambdaForFunctionalInterface extends Recipe {
                 updateCursor(n);
                 if (n.getBody() != null &&
                     n.getBody().getStatements().size() == 1 &&
-                    n.getBody().getStatements().get(0) instanceof J.MethodDeclaration &&
+                    n.getBody().getStatements().getFirst() instanceof J.MethodDeclaration &&
                     n.getClazz() != null) {
                     JavaType.FullyQualified type = TypeUtils.asFullyQualified(n.getClazz().getType());
                     if (type != null && type.getKind().equals(JavaType.Class.Kind.Interface)) {
@@ -94,13 +96,13 @@ public class UseLambdaForFunctionalInterface extends Recipe {
                         }
 
                         StringBuilder templateBuilder = new StringBuilder();
-                        J.MethodDeclaration methodDeclaration = (J.MethodDeclaration) n.getBody().getStatements().get(0);
+                        J.MethodDeclaration methodDeclaration = (J.MethodDeclaration) n.getBody().getStatements().getFirst();
 
-                        if (methodDeclaration.getParameters().get(0) instanceof J.Empty) {
+                        if (methodDeclaration.getParameters().getFirst() instanceof J.Empty) {
                             templateBuilder.append("() -> {");
                         } else {
                             templateBuilder.append(methodDeclaration.getParameters().stream()
-                                    .map(param -> ((J.VariableDeclarations) param).getVariables().get(0).getSimpleName())
+                                    .map(param -> ((J.VariableDeclarations) param).getVariables().getFirst().getSimpleName())
                                     .collect(Collectors.joining(",", "(", ") -> {")));
                         }
 
@@ -135,8 +137,7 @@ public class UseLambdaForFunctionalInterface extends Recipe {
             private J maybeAddCast(J.Lambda lambda, J.NewClass original) {
                 J parent = getCursor().getParentTreeCursor().getValue();
 
-                if (parent instanceof MethodCall) {
-                    MethodCall method = (MethodCall) parent;
+                if (parent instanceof MethodCall method) {
                     List<Expression> arguments = method.getArguments();
                     for (int i = 0; i < arguments.size(); i++) {
                         Expression argument = arguments.get(i);
@@ -261,7 +262,7 @@ public class UseLambdaForFunctionalInterface extends Recipe {
     private static List<String> parameterNames(J.MethodDeclaration method) {
         return method.getParameters().stream()
                 .filter(J.VariableDeclarations.class::isInstance)
-                .map(v -> ((J.VariableDeclarations) v).getVariables().get(0).getSimpleName())
+                .map(v -> ((J.VariableDeclarations) v).getVariables().getFirst().getSimpleName())
                 .collect(Collectors.toList());
     }
 
@@ -269,7 +270,7 @@ public class UseLambdaForFunctionalInterface extends Recipe {
     private static List<String> classFields(J.ClassDeclaration classDeclaration) {
         return classDeclaration.getBody().getStatements().stream()
                 .filter(J.VariableDeclarations.class::isInstance)
-                .map(v -> ((J.VariableDeclarations) v).getVariables().get(0).getSimpleName())
+                .map(v -> ((J.VariableDeclarations) v).getVariables().getFirst().getSimpleName())
                 .collect(Collectors.toList());
     }
 
@@ -281,8 +282,8 @@ public class UseLambdaForFunctionalInterface extends Recipe {
                 return true;
             } else if (next instanceof J && !(next instanceof J.MethodInvocation)) {
                 return false;
-            } else if (next instanceof J.MethodInvocation) {
-                for (Expression argument : ((J.MethodInvocation) next).getArguments()) {
+            } else if (next instanceof J.MethodInvocation invocation) {
+                for (Expression argument : invocation.getArguments()) {
                     if (argument == last) {
                         return false;
                     }
@@ -344,13 +345,12 @@ public class UseLambdaForFunctionalInterface extends Recipe {
         List<String> localVariables = new ArrayList<>();
         List<J.Block> nameScopeBlocks = new ArrayList<>();
         J nameScope = cursor.dropParentUntil(p -> {
-            if (p instanceof J.Block) {
-                nameScopeBlocks.add((J.Block) p);
+            if (p instanceof J.Block block) {
+                nameScopeBlocks.add(block);
             }
             return p instanceof J.MethodDeclaration || p instanceof J.ClassDeclaration;
         }).getValue();
-        if (nameScope instanceof J.MethodDeclaration) {
-            J.MethodDeclaration m = (J.MethodDeclaration) nameScope;
+        if (nameScope instanceof J.MethodDeclaration m) {
             localVariables.addAll(parameterNames(m));
             J.ClassDeclaration c = cursor.firstEnclosing(J.ClassDeclaration.class);
             assert c != null;
@@ -410,8 +410,8 @@ public class UseLambdaForFunctionalInterface extends Recipe {
             public J visitMethodInvocation(J.MethodInvocation method, AtomicBoolean atomicBoolean) {
                 if (method.getMethodType() != null &&
                     method.getMethodType().getParameterTypes().stream()
-                            .anyMatch(p -> p instanceof JavaType.Parameterized &&
-                                           ((JavaType.Parameterized) p).getTypeParameters().stream().anyMatch(t -> t instanceof JavaType.GenericTypeVariable))
+                            .anyMatch(p -> p instanceof JavaType.Parameterized p1 &&
+                                           p1.getTypeParameters().stream().anyMatch(t -> t instanceof JavaType.GenericTypeVariable))
                 ) {
                     atomicBoolean.set(true);
                 }

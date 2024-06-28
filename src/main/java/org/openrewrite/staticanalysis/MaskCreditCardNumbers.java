@@ -37,8 +37,10 @@ public class MaskCreditCardNumbers extends Recipe {
 
     @Override
     public String getDescription() {
-        return "When encountering string literals which appear to be credit card numbers, " +
-               "mask the last eight digits with the letter 'X'.";
+        return """
+               When encountering string literals which appear to be credit card numbers, \
+               mask the last eight digits with the letter 'X'.\
+               """;
     }
 
     private static final Pattern CC_PATTERN = Pattern.compile("([0-9]{4} ?[0-9]{4} ?)([0-9]{4} ?[0-9]{4} ?)");

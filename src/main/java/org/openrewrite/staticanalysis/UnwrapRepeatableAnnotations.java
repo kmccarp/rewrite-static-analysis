@@ -36,8 +36,10 @@ public class UnwrapRepeatableAnnotations extends Recipe {
 
     @Override
     public String getDescription() {
-        return "Java 8 introduced the concept of `@Repeatable` annotations, " +
-               "making the wrapper annotation unnecessary.";
+        return """
+               Java 8 introduced the concept of `@Repeatable` annotations, \
+               making the wrapper annotation unnecessary.\
+               """;
     }
 
     @Override
@@ -50,7 +52,7 @@ public class UnwrapRepeatableAnnotations extends Recipe {
                 if (ann.isEmpty()) {
                     return m;
                 }
-                return maybeAutoFormat(m, m.withLeadingAnnotations(ann), ann.get(ann.size() - 1), ctx,
+                return maybeAutoFormat(m, m.withLeadingAnnotations(ann), ann.getLast(), ctx,
                         getCursor().getParentOrThrow());
             }
 
@@ -61,7 +63,7 @@ public class UnwrapRepeatableAnnotations extends Recipe {
                 if (ann.isEmpty()) {
                     return c;
                 }
-                return maybeAutoFormat(c, c.withLeadingAnnotations(ann), ann.get(ann.size() - 1), ctx,
+                return maybeAutoFormat(c, c.withLeadingAnnotations(ann), ann.getLast(), ctx,
                         getCursor().getParentOrThrow());
             }
 
@@ -72,7 +74,7 @@ public class UnwrapRepeatableAnnotations extends Recipe {
                 if (ann.isEmpty()) {
                     return v;
                 }
-                return maybeAutoFormat(v, v.withLeadingAnnotations(ann), ann.get(ann.size() - 1), ctx,
+                return maybeAutoFormat(v, v.withLeadingAnnotations(ann), ann.getLast(), ctx,
                         getCursor().getParentOrThrow());
             }
 

@@ -83,7 +83,7 @@ public class SimplifyDurationCreationUnits extends Recipe {
                     return method;
                 }
 
-                Long invocationUnitCount = getConstantIntegralValue(method.getArguments().get(0));
+                Long invocationUnitCount = getConstantIntegralValue(method.getArguments().getFirst());
                 if (invocationUnitCount == null || invocationUnitCount == 0L) {
                     return method;
                 }
@@ -114,17 +114,15 @@ public class SimplifyDurationCreationUnits extends Recipe {
 
     @Nullable
     public static Long getConstantIntegralValue(Expression expression) {
-        if (expression instanceof J.Literal) {
-            J.Literal literal = (J.Literal) expression;
+        if (expression instanceof J.Literal literal) {
             if (literal.getType() != JavaType.Primitive.Int && literal.getType() != JavaType.Primitive.Long) {
                 return null;
             }
             Object value = literal.getValue();
-            if (value instanceof Number) {
-                return ((Number) value).longValue();
+            if (value instanceof Number number) {
+                return number.longValue();
             }
-        } else if (expression instanceof J.Binary) {
-            J.Binary binary = (J.Binary) expression;
+        } else if (expression instanceof J.Binary binary) {
             if (binary.getOperator() != J.Binary.Type.Multiplication) {
                 return null;
             }
